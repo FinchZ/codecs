@@ -4,9 +4,24 @@ using System.Text;
 
 namespace Tars.Net.Codecs
 {
+
+    public static class TarsSupportBaseType
+    {
+        public static readonly Type BOOLEN = typeof(bool);
+        public static readonly Type BYTE = typeof(byte);
+        public static readonly Type SHORT = typeof(short);//16位 整数 0x01
+        public static readonly Type INT = typeof(int);//32位 整数 0x02
+        public static readonly Type LONG = typeof(long);//64位 整数 0x03
+        public static readonly Type FLOAT = typeof(float);//单精度浮点型 0x04
+        public static readonly Type DOUBLE = typeof(double);//双精度浮点型 0x05
+        public static readonly Type STRING = typeof(string);//字符串  0x06 0-255字节 
+        public static readonly Type MAP = typeof(Dictionary<,>);
+        public static readonly Type LIST = typeof(List<>);
+    }
+
     //tars支持的数据类型
     public abstract class TarsStructBase
-    { 
+    {
         public const byte BYTE = 0;//8位 整数 0x00 
         public const byte SHORT = 1;//16位 整数 0x01
         public const byte INT = 2;//32位 整数 0x02

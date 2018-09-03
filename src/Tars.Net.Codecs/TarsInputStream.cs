@@ -17,13 +17,11 @@ namespace Tars.Net.Codecs
         {
             sServerEncoding = Encoding.GetEncoding(name);
         }
-
         public TarsInputStream(IByteBuffer input)
         {
             buffer = input;
         }
         public TarsInputStream(byte[] bs) : this(bs, 0) { }
-
         public TarsInputStream(byte[] bs, int pos)
         {
             buffer = Unpooled.WrappedBuffer(bs);
@@ -31,7 +29,6 @@ namespace Tars.Net.Codecs
         }
         public void Wrap(byte[] bs) =>
             buffer = Unpooled.WrappedBuffer(bs);
-
         /// <summary>
         /// 读取数据头
         /// </summary>
@@ -62,14 +59,12 @@ namespace Tars.Net.Codecs
             Skip(-1 * len);
             return len;
         }
-
         /// <summary>
         /// 跳过若干字节
         /// </summary>
         /// <param name="len"></param>
         private void Skip(int len) =>
             buffer.SetReaderIndex(buffer.ReaderIndex + len);
-
         /// <summary>
         /// 跳到指定的tag的数据之前
         /// </summary>
@@ -111,7 +106,6 @@ namespace Tars.Net.Codecs
                 SkipField(hd.Type);
             } while (hd.Type != TarsStructBase.STRUCT_END);
         }
-
         /// <summary>
         /// 跳过一个字段
         /// </summary>
@@ -121,7 +115,6 @@ namespace Tars.Net.Codecs
             ReadHead(hd);
             SkipField(hd.Type);
         }
-
         private void SkipField(byte type)
         {
             switch (type)
@@ -159,7 +152,7 @@ namespace Tars.Net.Codecs
                     }
                 case TarsStructBase.MAP:
                     {
-                        int size = Read(0, 0, true);
+                        int size = ReadInt(0, true);
                         for (int i = 0; i < size * 2; ++i)
                         {
                             SkipField();
@@ -168,7 +161,7 @@ namespace Tars.Net.Codecs
                     }
                 case TarsStructBase.LIST:
                     {
-                        int size = Read(0, 0, true);
+                        int size = ReadInt(0, true);
                         for (int i = 0; i < size; ++i)
                         {
                             SkipField();
@@ -183,7 +176,7 @@ namespace Tars.Net.Codecs
                         {
                             throw new TarsDecodeException("skipField with invalid type, type value: " + type + ", " + hd.Type);
                         }
-                        int size = Read(0, 0, true);
+                        int size = ReadInt(0, true);
                         Skip(size);
                         break;
                     }
@@ -198,194 +191,7 @@ namespace Tars.Net.Codecs
                     throw new TarsDecodeException("invalid type.");
             }
         }
-
-        public bool Read(bool b, int tag, bool isRequire)
-        {
-            byte c = Read((byte)0x0, tag, isRequire);
-            return c != 0;
-        }
-        public byte Read(byte c, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.ZERO_TAG:
-                        c = 0x0;
-                        break;
-                    case TarsStructBase.BYTE:
-                        {
-                            c = buffer.ReadByte();
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return c;
-        }
-
-        public short Read(short n, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.ZERO_TAG:
-                        n = 0;
-                        break;
-                    case TarsStructBase.BYTE:
-                        {
-                            n = (short)buffer.ReadByte();
-                            break;
-                        }
-                    case TarsStructBase.SHORT:
-                        {
-                            n = buffer.ReadShort();
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return n;
-        }
-
-        public int Read(int n, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.ZERO_TAG:
-                        n = 0;
-                        break;
-
-                    case TarsStructBase.BYTE:
-                        n = (int)buffer.ReadByte();
-                        break;
-
-                    case TarsStructBase.SHORT:
-                        n = buffer.ReadShort();
-                        break;
-
-                    case TarsStructBase.INT:
-                        n = buffer.ReadInt();
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return n;
-        }
-
-        public long Read(long n, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.ZERO_TAG:
-                        n = 0;
-                        break;
-                    case TarsStructBase.BYTE:
-                        n = (int)buffer.ReadByte();
-                        break;
-                    case TarsStructBase.SHORT:
-                        n = buffer.ReadShort();
-                        break;
-                    case TarsStructBase.INT:
-                        n = buffer.ReadInt();
-                        break;
-                    case TarsStructBase.LONG:
-                        n = buffer.ReadLong();
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return n;
-        }
-        public float Read(float n, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.ZERO_TAG:
-                        n = 0;
-                        break;
-
-                    case TarsStructBase.FLOAT:
-                        n = buffer.ReadFloat();
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return n;
-        }
-
-        public double Read(double n, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.ZERO_TAG:
-                        n = 0;
-                        break;
-                    case TarsStructBase.FLOAT:
-                        n = buffer.ReadFloat();
-                        break;
-
-                    case TarsStructBase.DOUBLE:
-                        n = buffer.ReadDouble();
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return n;
-        }
-
-        public string ReadByteString(string s, int tag, bool isRequire)
+        public string ReadByteString(int tag, bool isRequire)
         {
             if (SkipToTag(tag))
             {
@@ -400,510 +206,24 @@ namespace Tars.Net.Codecs
                                 len += 256;
                             byte[] ss = new byte[len];
                             buffer.ReadBytes(ss);
-                            s = HexUtil.Bytes2HexStr(ss);
+                            return HexUtil.Bytes2HexStr(ss);
                         }
-                        break;
-
                     case TarsStructBase.STRING4:
                         {
                             int len = buffer.ReadInt();
                             if (len > TarsStructBase.MAX_STRING_LENGTH || len < 0)
                                 throw new TarsDecodeException("string too long: " + len);
                             byte[] ss = buffer.ReadBytes(len).Array;
-                            s = HexUtil.Bytes2HexStr(ss);
-                        }
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return s;
-        }
-
-        public string Read(string s, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.STRING1:
-                        {
-                            int len = buffer.ReadByte();
-                            if (len < 0)
-                                len += 256;
-                            byte[] ss = new byte[len];
-                            buffer.ReadBytes(ss);
-                            try
-                            {
-                                s = sServerEncoding.GetString(ss);
-                            }
-                            catch
-                            {
-                                s = Encoding.UTF8.GetString(ss);
-                            }
-                        }
-                        break;
-                    case TarsStructBase.STRING4:
-                        {
-                            int len = buffer.ReadInt();
-                            if (len > TarsStructBase.MAX_STRING_LENGTH || len < 0)
-                                throw new TarsDecodeException("string too long: " + len);
-                            byte[] ss = new byte[len];
-                            buffer.ReadBytes(ss);
-                            try
-                            {
-                                s = sServerEncoding.GetString(ss);
-                            }
-                            catch
-                            {
-                                s = Encoding.UTF8.GetString(ss);
-                            }
-                        }
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return s;
-        }
-
-        public string ReadString(int tag, bool isRequire)
-        {
-            string str = null;
-            if (SkipToTag(tag))
-                str = Read(str, tag, isRequire);
-            else if (isRequire)
-                throw new TarsDecodeException("require field not exist.");
-            return str;
-        }
-
-        public string[] Read(string[] s, int tag, bool isRequire) => ReadArray(s, tag, isRequire);
-
-        public bool[] Read(bool[] l, int tag, bool isRequire)
-        {
-            bool[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new bool[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
+                            return HexUtil.Bytes2HexStr(ss);
                         }
                     default:
                         throw new TarsDecodeException("type mismatch.");
                 }
             }
             else if (isRequire)
-            {
                 throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-
-        public byte[] Read(byte[] l, int tag, bool isRequire)
-        {
-            byte[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.SIMPLE_LIST:
-                        {
-                            var hh = new HeadData();
-                            ReadHead(hh);
-                            if (hh.Type != TarsStructBase.BYTE)
-                                throw new TarsDecodeException("type mismatch, tag: " + tag + ", type: " + hd.Type + ", " + hh.Type);
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("invalid size, tag: " + tag + ", type: " + hd.Type + ", " + hh.Type + ", size: " + size);
-                            lr = new byte[size];
-                            buffer.ReadBytes(lr);
-                            break;
-                        }
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new byte[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-        public short[] Read(short[] l, int tag, bool isRequire)
-        {
-            short[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new short[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-        public int[] Read(int[] l, int tag, bool isRequire)
-        {
-            int[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new int[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-        public long[] Read(long[] l, int tag, bool isRequire)
-        {
-            long[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new long[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-        public float[] Read(float[] l, int tag, bool isRequire)
-        {
-            float[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new float[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-        public double[] Read(double[] l, int tag, bool isRequire)
-        {
-            double[] lr = null;
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            lr = new double[size];
-                            for (int i = 0; i < size; ++i)
-                                lr[i] = Read(lr[0], 0, true);
-                            break;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return lr;
-        }
-
-        public IDictionary<string, string> ReadStringMap(int tag, bool isRequire)
-        {
-            IDictionary<string, string> dic = new Dictionary<string, string>();
-            if (SkipToTag(tag))
-            {
-                HeadData hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.MAP:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0) throw new TarsDecodeException("size invalid: " + size);
-                            for (int i = 0; i < size; ++i)
-                            {
-                                String k = ReadString(0, true);
-                                String v = ReadString(1, true);
-                                dic.Add(k, v);
-                            }
-                        }
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return dic;
-        }
-
-        public Dictionary<K, V> ReadMap<K, V>(IDictionary<K, V> m, int tag, bool isRequire)
-        => (Dictionary<K, V>)ReadMap(new Dictionary<K, V>(), m, tag, isRequire);
-
-        public IDictionary ReadMap(IDictionary m, int tag, bool isRequire)
-        {
-            Type type = m.GetType();
-            Type[] argsType = type.GetGenericArguments();
-            var mk = BasicClassTypeUtil.CreateObject(argsType[0]);
-            var mv = BasicClassTypeUtil.CreateObject(argsType[1]);
-            if (SkipToTag(tag))
-            {
-                HeadData hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.MAP:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0) throw new TarsDecodeException("size invalid: " + size);
-                            for (int i = 0; i < size; ++i)
-                            {
-                                mk = Read(mk, 0, true);
-                                mv = Read(mv, 1, true);
-                                if (m.Contains(mk))
-                                    m[mk] = mv;
-                                else
-                                    m.Add(mk, mv);
-                            }
-                        }
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return m;
-
-        }
-
-        public IDictionary<K, V> ReadMap<K, V>(IDictionary<K, V> mr, IDictionary<K, V> m, int tag, bool isRequire)
-        {
-            if (m == null || m.Count == 0)
-                return new Dictionary<K, V>();
-            K mk = default(K);
-            V mv = default(V);
-            if (SkipToTag(tag))
-            {
-                HeadData hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.MAP:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0) throw new TarsDecodeException("size invalid: " + size);
-                            for (int i = 0; i < size; ++i)
-                            {
-                                mk = (K)Read(mk, 0, true);
-                                mv = (V)Read(mv, 1, true);
-                                if (m.ContainsKey(mk))
-                                    m[mk] = mv;
-                                else
-                                    m.Add(mk, mv);
-                            }
-                        }
-                        break;
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return mr;
-        }
-
-        public T[] ReadArray<T>(T[] l, int tag, bool isRequire)
-        {
-            if (l == null || l.Length == 0)
-                throw new TarsDecodeException("unable to get type of key and value.");
-            return ReadArrayImpl(l[0], tag, isRequire);
-        }
-        public IList ReadList<T>(T l, int tag, bool isRequire)
-        { 
-
-            IList list = BasicClassTypeUtil.CreateObject(l.GetType()) as IList;
-            if (list == null)
-            {
-                return null;
-            }
-
-            object objItem = BasicClassTypeUtil.CreateListItem(list.GetType());
-
-            Array array = ReadArrayImpl(objItem, tag, isRequire);
-
-            if (array != null)
-            {
-                list.Clear();
-                foreach (object obj in array)
-                {
-                    list.Add(obj);
-                }
-
-                return list;
-            }
-
             return null;
         }
-
-        public IList<T> ReadArray<T>(IList<T> l, int tag, bool isRequire)
-        {
-            if (l == null || l.Count == 0)
-            {
-                return new List<T>();
-            }
-            T[] tt = ReadArrayImpl(l[0], tag, isRequire);
-            if (tt == null) return null;
-            List<T> ll = new List<T>();
-            for (int i = 0; i < tt.Length; ++i)
-                ll.Add(tt[i]);
-            return ll;
-        }
-
-        private T[] ReadArrayImpl<T>(T mt, int tag, bool isRequire)
-        {
-            if (SkipToTag(tag))
-            {
-                var hd = new HeadData();
-                ReadHead(hd);
-                switch (hd.Type)
-                {
-                    case TarsStructBase.LIST:
-                        {
-                            int size = Read(0, 0, true);
-                            if (size < 0)
-                                throw new TarsDecodeException("size invalid: " + size);
-                            T[] lr = (T[])Array.CreateInstance(mt.GetType(), size);
-                            for (int i = 0; i < size; ++i)
-                            {
-                                T t = (T)Read(mt, 0, true);
-                                lr.SetValue(t, i);
-                            }
-                            return lr;
-                        }
-                    default:
-                        throw new TarsDecodeException("type mismatch.");
-                }
-            }
-            else if (isRequire)
-            {
-                throw new TarsDecodeException("require field not exist.");
-            }
-            return null;
-        }
-
         public TarsStructBase DirectRead(TarsStructBase o, int tag, bool isRequire)
         {
             TarsStructBase reff = null;
@@ -927,20 +247,560 @@ namespace Tars.Net.Codecs
                 SkipToStructEnd();
             }
             else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return reff;
+        }
+        public object Read(Type type, int tag, bool isRequire)
+        {
+            if (type.Equals(TarsSupportBaseType.BOOLEN))
+                return Convert.ChangeType(ReadByte(tag, isRequire), TarsSupportBaseType.BOOLEN);
+            else if (type.Equals(TarsSupportBaseType.BYTE))
+                return Convert.ChangeType(ReadByte(tag, isRequire), TarsSupportBaseType.BYTE);
+            else if (type.Equals(TarsSupportBaseType.SHORT))
+                return Convert.ChangeType(ReadShort(tag, isRequire), TarsSupportBaseType.SHORT);
+            else if (type.Equals(TarsSupportBaseType.INT))
+                return Convert.ChangeType(ReadInt(tag, isRequire), TarsSupportBaseType.INT);
+            else if (type.Equals(TarsSupportBaseType.LONG))
+                return Convert.ChangeType(ReadLong(tag, isRequire), TarsSupportBaseType.LONG);
+            else if (type.Equals(TarsSupportBaseType.FLOAT))
+                return Convert.ChangeType(ReadFloat(tag, isRequire), TarsSupportBaseType.FLOAT);
+            else if (type.Equals(TarsSupportBaseType.DOUBLE))
+                return Convert.ChangeType(ReadDouble(tag, isRequire), TarsSupportBaseType.DOUBLE);
+            else if (type.Equals(TarsSupportBaseType.STRING))
+                return Convert.ChangeType(ReadString(tag, isRequire), TarsSupportBaseType.STRING);
+            else if (type.IsAssignableFrom(typeof(TarsStructBase)))
+                return ReadTarsStructBase(type, tag, isRequire);
+            else if (type.IsArray)
+            {
+                Type elementType = type.GetElementType();
+                if (elementType.Equals(TarsSupportBaseType.BYTE))
+                    return ReadByteArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.BOOLEN))
+                    return ReadBoolArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.SHORT))
+                    return ReadShortArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.INT))
+                    return ReadIntArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.LONG))
+                    return ReadLongArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.FLOAT))
+                    return ReadFloatArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.DOUBLE))
+                    return ReadDoubleArray(tag, isRequire);
+                if (elementType.Equals(TarsSupportBaseType.STRING))
+                    return ReadStringArray(tag, isRequire);
+                else if (elementType.IsAssignableFrom(typeof(TarsStructBase)))
+                    return ReadTarsStructBaseArray(elementType, tag, isRequire);
+                else
+                    return Read(elementType, tag, isRequire);
+            }
+            else if (type.IsGenericType)
+            {
+                if (type.Equals(TarsSupportBaseType.LIST))
+                    return ReadList(type, tag, isRequire);
+                else if (type.Equals(TarsSupportBaseType.MAP))
+                    return ReadMap(type, tag, isRequire);
+                else
+                    throw new TarsDecodeException("the class type[" + type.FullName + "] not surpport");
+            }
+            else
+                return TarsInputStreamExt.Read(type, tag, isRequire, this);
+        }
+        public bool ReadBool(int tag, bool isRequire)
+        {
+            byte c = ReadByte(tag, isRequire);
+            return c != 0;
+        }
+        public byte ReadByte(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.ZERO_TAG:
+                        return 0x0;
+                    case TarsStructBase.BYTE: return buffer.ReadByte();
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return 0x0;
+        }
+        public short ReadShort(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.ZERO_TAG:
+                        return 0x0;
+                    case TarsStructBase.BYTE:
+                        return (short)buffer.ReadByte();
+                    case TarsStructBase.SHORT:
+                        return buffer.ReadShort();
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return 0x0;
+        }
+        public int ReadInt(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.ZERO_TAG:
+                        return 0x0;
+                    case TarsStructBase.BYTE:
+                        return (int)buffer.ReadByte();
+                    case TarsStructBase.SHORT:
+                        return buffer.ReadShort();
+                    case TarsStructBase.INT:
+                        return buffer.ReadInt();
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return 0x0;
+        }
+        public long ReadLong(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.ZERO_TAG:
+                        return 0x0;
+                    case TarsStructBase.BYTE:
+                        return (int)buffer.ReadByte();
+                    case TarsStructBase.SHORT:
+                        return buffer.ReadShort();
+                    case TarsStructBase.INT:
+                        return buffer.ReadInt();
+                    case TarsStructBase.LONG:
+                        return buffer.ReadLong();
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return 0x0;
+        }
+        public float ReadFloat(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.ZERO_TAG:
+                        return 0x0;
+                    case TarsStructBase.FLOAT:
+                        return buffer.ReadFloat();
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return 0x0;
+        }
+        public double ReadDouble(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.ZERO_TAG:
+                        return 0x0;
+                    case TarsStructBase.FLOAT:
+                        return buffer.ReadFloat();
+                    case TarsStructBase.DOUBLE:
+                        return buffer.ReadDouble();
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return 0x0;
+        }
+        public string ReadString(int tag, bool isRequire)
+        {
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.STRING1:
+                        {
+                            int len = buffer.ReadByte();
+                            if (len < 0)
+                                len += 256;
+                            byte[] ss = new byte[len];
+                            buffer.ReadBytes(ss);
+                            try
+                            {
+                                return sServerEncoding.GetString(ss);
+                            }
+                            catch
+                            {
+                                return Encoding.UTF8.GetString(ss);
+                            }
+                        }
+                    case TarsStructBase.STRING4:
+                        {
+                            int len = buffer.ReadInt();
+                            if (len > TarsStructBase.MAX_STRING_LENGTH || len < 0)
+                                throw new TarsDecodeException("string too long: " + len);
+                            byte[] ss = new byte[len];
+                            buffer.ReadBytes(ss);
+                            try
+                            {
+                                return sServerEncoding.GetString(ss);
+                            }
+                            catch
+                            {
+                                return Encoding.UTF8.GetString(ss);
+                            }
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
             {
                 throw new TarsDecodeException("require field not exist.");
             }
-            return reff;
+            return null;
         }
-
-        public TarsStructBase Read(TarsStructBase o, int tag, bool isRequire)
+        public IList ReadList(Type type, int tag, bool isRequire)
+        {
+            IList list = (IList)Activator.CreateInstance(type);
+            Type[] argsType = type.GetGenericArguments();
+            var valueType = argsType[0];
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            for (int i = 0; i < size; ++i)
+                            {
+                                var t = Read(valueType, 0, true);
+                                list.Add(t);
+                            }
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return list;
+        }
+        public IDictionary ReadMap(Type type, int tag, bool isRequire)
+        {
+            IDictionary dic = (IDictionary)Activator.CreateInstance(type);
+            Type[] argsType = type.GetGenericArguments();
+            var keyType = argsType[0];
+            var valueType = argsType[1]; ;
+            if (SkipToTag(tag))
+            {
+                HeadData hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.MAP:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0) throw new TarsDecodeException("size invalid: " + size);
+                            for (int i = 0; i < size; ++i)
+                            {
+                                var mk = Read(keyType, 0, true);
+                                var mv = Read(valueType, 1, true);
+                                if (dic.Contains(mk))
+                                    dic[mk] = mv;
+                                else
+                                    dic.Add(mk, mv);
+                            }
+                        }
+                        break;
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return dic;
+        }
+        public bool[] ReadBoolArray(int tag, bool isRequire)
+        {
+            bool[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new bool[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadBool(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+            {
+                throw new TarsDecodeException("require field not exist.");
+            }
+            return lr;
+        }
+        private byte[] ReadByteArray(int tag, bool isRequire)
+        {
+            byte[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.SIMPLE_LIST:
+                        {
+                            var hh = new HeadData();
+                            ReadHead(hh);
+                            if (hh.Type != TarsStructBase.BYTE)
+                                throw new TarsDecodeException("type mismatch, tag: " + tag + ", type: " + hd.Type + ", " + hh.Type);
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("invalid size, tag: " + tag + ", type: " + hd.Type + ", " + hh.Type + ", size: " + size);
+                            lr = new byte[size];
+                            buffer.ReadBytes(lr);
+                            break;
+                        }
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new byte[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadByte(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+            {
+                throw new TarsDecodeException("require field not exist.");
+            }
+            return lr;
+        }
+        public short[] ReadShortArray(int tag, bool isRequire)
+        {
+            short[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new short[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadShort(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
+        }
+        public int[] ReadIntArray(int tag, bool isRequire)
+        {
+            int[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new int[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadInt(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
+        }
+        public long[] ReadLongArray(int tag, bool isRequire)
+        {
+            long[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new long[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadLong(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
+        }
+        public float[] ReadFloatArray(int tag, bool isRequire)
+        {
+            float[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new float[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadFloat(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
+        }
+        public double[] ReadDoubleArray(int tag, bool isRequire)
+        {
+            double[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new double[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadDouble(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
+        }
+        public string[] ReadStringArray(int tag, bool isRequire)
+        {
+            string[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new string[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadString(0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
+        }
+        public TarsStructBase ReadTarsStructBase(Type type, int tag, bool isRequire)
         {
             TarsStructBase reff = null;
             if (SkipToTag(tag))
             {
                 try
                 {
-                    reff = (TarsStructBase)Activator.CreateInstance(o.GetType());
+                    reff = (TarsStructBase)Activator.CreateInstance(type);
                 }
                 catch (Exception e)
                 {
@@ -962,100 +822,34 @@ namespace Tars.Net.Codecs
             }
             return reff;
         }
-
-        public TarsStructBase[] Read(TarsStructBase[] o, int tag, bool isRequire)
+        private TarsStructBase[] ReadTarsStructBaseArray(Type elementType, int tag, bool isRequire)
         {
-            return ReadArray(o, tag, isRequire);
+            TarsStructBase[] lr = null;
+            if (SkipToTag(tag))
+            {
+                var hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.LIST:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            lr = new TarsStructBase[size];
+                            for (int i = 0; i < size; ++i)
+                                lr[i] = ReadTarsStructBase(elementType, 0, true);
+                            break;
+                        }
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return lr;
         }
 
-        public object Read<T>(T o, int tag, bool isRequire)
-        {
-            if (o is byte)
-            {
-                return (Read((byte)0x0, tag, isRequire));
-            }
-            else if (o is bool)
-            {
-                return (Read(false, tag, isRequire));
-            }
-            else if (o is short)
-            {
-                return Read((short)0, tag, isRequire);
-            }
-            else if (o is int)
-            {
-                return Read((int)0, tag, isRequire);
-            }
-            else if (o is long)
-            {
-                return (Read((long)0, tag, isRequire));
-            }
-            else if (o is float)
-            {
-                return (Read((float)0, tag, isRequire));
-            }
-            else if (o is double)
-            {
-                return (Read((double)0, tag, isRequire));
-            }
-            else if (o is string)
-            {
-                return (ReadString(tag, isRequire));
-            }
-            else if (o is IList)
-            {
-                return ReadList<T>(o, tag, isRequire);
-            }
-            else if (o is IDictionary)
-            {
-                IDictionary oo = o as IDictionary;
-                return ReadMap(oo, tag, isRequire);
-            }
-            else if (o is TarsStructBase)
-            {
-                return Read(o, tag, isRequire);
-            }
-            else if (o.GetType().IsArray)
-            {
-                if (o is byte[] || o is Byte[])
-                {
-                    return Read((byte[])null, tag, isRequire);
-                }
-                else if (o is bool[])
-                {
-                    return Read((bool[])null, tag, isRequire);
-                }
-                else if (o is short[])
-                {
-                    return Read((short[])null, tag, isRequire);
-                }
-                else if (o is int[])
-                {
-                    return Read((int[])null, tag, isRequire);
-                }
-                else if (o is long[])
-                {
-                    return Read((long[])null, tag, isRequire);
-                }
-                else if (o is float[])
-                {
-                    return Read((float[])null, tag, isRequire);
-                }
-                else if (o is double[])
-                {
-                    return Read((double[])null, tag, isRequire);
-                }
-                else
-                {
-                    object oo = o;
-                    return ReadArray((Object[])oo, tag, isRequire);
-                }
-            }
-            else
-            {
-                return TarsInputStreamExt.Read(o, tag, isRequire, this);
-            }
-        }
         public IByteBuffer GetBs()
         {
             return buffer;
