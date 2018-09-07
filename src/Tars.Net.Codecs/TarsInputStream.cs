@@ -21,6 +21,12 @@ namespace Tars.Net.Codecs
         {
             buffer = input;
         }
+
+        public int GetDataLength() {
+            return buffer.ReadInt();
+        }
+
+
         public TarsInputStream(byte[] bs) : this(bs, 0) { }
         public TarsInputStream(byte[] bs, int pos)
         {
@@ -525,6 +531,40 @@ namespace Tars.Net.Codecs
                 throw new TarsDecodeException("require field not exist.");
             return list;
         }
+
+        internal Dictionary<string, string> ReadMap(int tag, bool isRequire)
+        {
+            Dictionary<string, string> dic = new Dictionary<string, string>();
+            if (SkipToTag(tag))
+            {
+                HeadData hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.MAP:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0) throw new TarsDecodeException("size invalid: " + size);
+                            for (int i = 0; i < size; ++i)
+                            {
+                                string mk = ReadString(0, true);
+                                string mv = ReadString(1, true);
+                                if (dic.ContainsKey(mk))
+                                    dic[mk] = mv;
+                                else
+                                    dic.Add(mk, mv);
+                            }
+                        }
+                        break;
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return dic;
+        }
+
         public IDictionary ReadMap(Type type, int tag, bool isRequire)
         {
             IDictionary dic = (IDictionary)Activator.CreateInstance(type);
@@ -589,7 +629,7 @@ namespace Tars.Net.Codecs
             }
             return lr;
         }
-        private byte[] ReadByteArray(int tag, bool isRequire)
+        public byte[] ReadByteArray(int tag, bool isRequire)
         {
             byte[] lr = null;
             if (SkipToTag(tag))

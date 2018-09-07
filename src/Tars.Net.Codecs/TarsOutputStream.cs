@@ -12,6 +12,12 @@ namespace Tars.Net.Codecs
     {
         private IByteBuffer buf;
 
+        public TarsOutputStream() : this(128) { }
+        public TarsOutputStream(int capacity)
+        {
+            buf = Unpooled.Buffer(capacity);
+        }
+
         public TarsOutputStream(IByteBuffer buf)
         {
             this.buf = buf;
@@ -30,6 +36,13 @@ namespace Tars.Net.Codecs
         {
             buf.EnsureWritable(len, true);
         }
+
+        public void ResetDataLength(int length)
+        {
+            buf.SetInt(0, length);
+        }
+
+        public IByteBuffer GetByteBuffer() => buf;
 
         // 写入头信息
         public void WriteHead(byte type, int tag)
@@ -289,6 +302,22 @@ namespace Tars.Net.Codecs
                 }
             }
         }
+
+        public void Write(IDictionary<string, string> m, int tag)
+        {
+            Reserve(8);
+            WriteHead(TarsStructBase.MAP, tag);
+            Write(m == null ? 0 : m.Count, 0);
+            if (m != null)
+            {
+                foreach (KeyValuePair<string, string> en in m)
+                {
+                    Write(en.Key, 0);
+                    Write(en.Value, 1);
+                }
+            }
+        }
+
         public void Write<K, V>(IDictionary<K, V> m, int tag)
         {
             Reserve(8);
