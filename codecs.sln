@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.28010.2003
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{37F056FA-A0EE-4BEB-894F-5ADD45BE068B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tars.Net.Codecs", "src\Tars.Net.Codecs\Tars.Net.Codecs.csproj", "{C6CA87EF-EF07-4018-9BC4-3244593128BD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tars.Net.Codecs", "src\Tars.Net.Codecs\Tars.Net.Codecs.csproj", "{C6CA87EF-EF07-4018-9BC4-3244593128BD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6CE9223A-58E3-4E68-BBAB-0BB49EF3C30C}"
 EndProject

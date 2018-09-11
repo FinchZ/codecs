@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspectCore.Extensions.Reflection" Version="1.0.0" />
     <PackageReference Include="DotNetty.Buffers" Version="0.5.0" />
+    <PackageReference Include="Tars.Net.Abstractions" Version="0.0.1-beta-20180831171352" />
   </ItemGroup>
 
 </Project>
