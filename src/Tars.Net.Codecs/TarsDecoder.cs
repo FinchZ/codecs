@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Tars.Net.Codecs.Exceptions;
+using Tars.Net.Exceptions;
 using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
@@ -18,20 +19,26 @@ namespace Tars.Net.Codecs
                 throw new ProtocolException("the length header of the package must be between 0~10M bytes. data length:" + length);
             if (input.Capacity < length)
                 return null;
-
-            TarsInputStream jis = new TarsInputStream(input);
-            Request request = new Request();
-            request.Version = jis.ReadShort(1, true);
-            request.PacketType = jis.ReadByte(2, true);
-            request.MessageType = jis.ReadInt(3, true);
-            request.RequestId = jis.ReadInt(4, true);
-            request.ServantName = jis.ReadString(5, true);
-            request.FuncName = jis.ReadString(6, true);
-            request.Buffer = jis.ReadByteArray(7, true);//数据
-            request.Timeout = jis.ReadInt(8, true);//超时时间
-            request.Context = jis.ReadMap(9, true);
-            request.Status = jis.ReadMap(10, true);
-            return request;
+            try
+            {
+                TarsInputStream jis = new TarsInputStream(input);
+                Request request = new Request();
+                request.Version = jis.ReadShort(1, true);
+                request.PacketType = jis.ReadByte(2, true);
+                request.MessageType = jis.ReadInt(3, true);
+                request.RequestId = jis.ReadInt(4, true);
+                request.ServantName = jis.ReadString(5, true);
+                request.FuncName = jis.ReadString(6, true);
+                request.Buffer = jis.ReadByteArray(7, true);//数据
+                request.Timeout = jis.ReadInt(8, true);//超时时间
+                request.Context = jis.ReadMap(9, true);
+                request.Status = jis.ReadMap(10, true);
+                return request;
+            }
+            catch (Exception ex)
+            {
+                throw new TarsException(RpcStatusCode.ServerDecodeErr, ex);
+            }
         }
 
         public Response DecodeResponse(IByteBuffer input)

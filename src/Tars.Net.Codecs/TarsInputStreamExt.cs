@@ -9,7 +9,7 @@ namespace Tars.Net.Codecs
     {
         internal static object Read(Type type, int tag, bool isRequire, TarsInputStream jis)
         {
-            TarsStructInfo info = TarsHelper.getStructInfo(type);
+            TarsStructInfo info = TarsHelper.GetStructInfo(type);
             if (info == null)
                 throw new TarsDecodeException("the class type[" + type.FullName + "] no attribute Struct");
             if (jis.SkipToTag(tag))

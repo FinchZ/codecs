@@ -22,7 +22,8 @@ namespace Tars.Net.Codecs
             buffer = input;
         }
 
-        public int GetDataLength() {
+        public int GetDataLength()
+        {
             return buffer.ReadInt();
         }
 
@@ -600,6 +601,44 @@ namespace Tars.Net.Codecs
                 throw new TarsDecodeException("require field not exist.");
             return dic;
         }
+
+
+        public IDictionary<K, V> ReadMap<K, V>(IDictionary<K, V> m, int tag, bool isRequire)
+        {
+            if (m == null)
+                return null;
+            if (SkipToTag(tag))
+            {
+                HeadData hd = new HeadData();
+                ReadHead(hd);
+                switch (hd.Type)
+                {
+                    case TarsStructBase.MAP:
+                        {
+                            int size = ReadInt(0, true);
+                            if (size < 0)
+                                throw new TarsDecodeException("size invalid: " + size);
+                            for (int i = 0; i < size; ++i)
+                            {
+                                K mk = (K)Read(typeof(K), 0, true);
+                                V mv = (V)Read(typeof(V), 1, true);
+                                if (m.ContainsKey(mk))
+                                    m[mk] = mv;
+                                else
+                                    m.Add(mk, mv);
+                            }
+                        }
+                        break;
+
+                    default:
+                        throw new TarsDecodeException("type mismatch.");
+                }
+            }
+            else if (isRequire)
+                throw new TarsDecodeException("require field not exist.");
+            return m;
+        }
+
         public bool[] ReadBoolArray(int tag, bool isRequire)
         {
             bool[] lr = null;

@@ -13,8 +13,11 @@ namespace Tars.Net.Codecs.Util
     {
         private static readonly Type[] EmptyTypeArray = new Type[] { };
         private static ConcurrentDictionary<Type, TarsStructInfo> tarsStructCache = new ConcurrentDictionary<Type, TarsStructInfo>();
+
+        private static ConcurrentDictionary<Type, Type> paramSourceCache = new ConcurrentDictionary<Type, Type>();
+
         //获取结构体详情
-        internal static TarsStructInfo getStructInfo(Type type)
+        internal static TarsStructInfo GetStructInfo(Type type)
         {
             TarsStructInfo structInfo = tarsStructCache.GetOrAdd(type, t =>
             {
@@ -55,6 +58,27 @@ namespace Tars.Net.Codecs.Util
                 return tarsStructInfo;
             });
             return structInfo;
-        } 
+        }
+
+
+        internal static Type GetSourceType(Type type)
+        {
+            if (!type.IsByRef)
+                return type;
+            try
+            {
+                return paramSourceCache.GetOrAdd(type, t =>
+                {
+                    string typeName = t.FullName;
+                    string srcType = typeName.AsSpan().Slice(0, typeName.Length - 1).ToString();
+                    return Type.GetType(srcType);
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new TargetException("the param type[" + type.FullName + "] not support");
+            }
+
+        }
     }
 }

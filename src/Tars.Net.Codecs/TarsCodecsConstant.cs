@@ -17,6 +17,8 @@ namespace Tars.Net.Codecs
 
         public const short VERSION3 = 0x03;//TUP2
 
-        public const int DEFAULT_TICKET_NUMBER =-1;
+        //public const int DEFAULT_TICKET_NUMBER =-1;
+
+        public const string STAMP_STRING = "";//TUP 方法返回值key用空字符串表示 其他key用参数名
     }
 }
