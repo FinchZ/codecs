@@ -1,0 +1,22 @@
+language: csharp
+dotnet: 2.1.401
+os: linux
+mono: none
+dist: trusty
+env:
+  global:
+    - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    - DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+script:
+  - chmod +x ./scripts/ut.sh && ./scripts/ut.sh
+
+deploy:
+  - provider: script
+    script: chmod +x ./scripts/deploy-branch.sh && ./scripts/deploy-branch.sh
+    on:
+     branch: master
+  - provider: script
+    script: chmod +x ./scripts/deploy-tag.sh && ./scripts/deploy-tag.sh
+    on:
+     tags: true
