@@ -44,6 +44,6 @@ namespace Tars.Net.Codecs
 
         public abstract T Deserialize(IByteBuffer buffer, TarsConvertOptions options);
 
-        public abstract void Serialize(T obj, IByteBuffer buffer, int order, TarsConvertOptions options);
+        public abstract void Serialize(T obj, IByteBuffer buffer, TarsConvertOptions options);
     }
 }

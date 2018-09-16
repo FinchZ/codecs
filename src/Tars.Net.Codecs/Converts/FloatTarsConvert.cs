@@ -24,17 +24,20 @@ namespace Tars.Net.Codecs
             }
         }
 
-        public override void Serialize(float obj, IByteBuffer buffer, int order, TarsConvertOptions options)
+        public override void Serialize(float obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             Reserve(buffer, 6);
             if (obj == 0)
             {
-                WriteHead(buffer, TarsStructBase.ZERO_TAG, order);
+                WriteHead(buffer, TarsStructBase.ZERO_TAG, options.Tag);
             }
             else
             {
-                WriteHead(buffer, TarsStructBase.FLOAT, order);
-                buffer.WriteFloat(obj);
+                WriteHead(buffer, TarsStructBase.FLOAT, options.Tag);
+                if (options.HasValue)
+                {
+                    buffer.WriteFloat(obj);
+                }
             }
         }
     }

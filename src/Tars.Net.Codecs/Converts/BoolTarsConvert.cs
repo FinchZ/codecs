@@ -15,9 +15,9 @@ namespace Tars.Net.Codecs
             return value != 0;
         }
 
-        public override void Serialize(bool obj, IByteBuffer buffer, int order, TarsConvertOptions options)
+        public override void Serialize(bool obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            convertRoot.Serialize((byte)(obj ? 0x01 : 0), buffer, order, options);
+            convertRoot.Serialize((byte)(obj ? 0x01 : 0), buffer, options);
         }
     }
 }

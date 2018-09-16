@@ -18,11 +18,11 @@ namespace Tars.Net.Codecs
             return options.HasValue ? (T?)value : null;
         }
 
-        public override void Serialize(T? obj, IByteBuffer buffer, int order, TarsConvertOptions options)
+        public override void Serialize(T? obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             var old = options.HasValue;
             options.HasValue = obj.HasValue;
-            convertRoot.Serialize(obj.GetValueOrDefault(), buffer, order, options);
+            convertRoot.Serialize(obj.GetValueOrDefault(), buffer, options);
             options.HasValue = old;
         }
     }

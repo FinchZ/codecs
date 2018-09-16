@@ -33,22 +33,22 @@ namespace Tars.Net.Codecs
             }
         }
 
-        public override void Serialize(string obj, IByteBuffer buffer, int order, TarsConvertOptions options)
+        public override void Serialize(string obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             if (string.IsNullOrEmpty(obj))
             {
-                WriteHead(buffer, TarsStructBase.STRING1, order);
+                WriteHead(buffer, TarsStructBase.STRING1, options.Tag);
                 buffer.WriteByte(0);
             }
             else if (obj.Length > 255)
             {
-                WriteHead(buffer, TarsStructBase.STRING4, order);
+                WriteHead(buffer, TarsStructBase.STRING4, options.Tag);
                 buffer.WriteInt(obj.Length);
                 buffer.WriteString(obj, options.Encoding);
             }
             else
             {
-                WriteHead(buffer, TarsStructBase.STRING1, order);
+                WriteHead(buffer, TarsStructBase.STRING1, options.Tag);
                 buffer.WriteByte(obj.Length);
                 buffer.WriteString(obj, options.Encoding);
             }

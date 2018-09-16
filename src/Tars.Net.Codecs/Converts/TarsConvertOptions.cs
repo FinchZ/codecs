@@ -11,7 +11,9 @@ namespace Tars.Net.Codecs
         public Codec Codec { get; set; } = Codec.Tars;
 
         public bool HasValue { get; set; } = true;
-        public int Tag { get; internal set; }
-        public byte TarsType { get; internal set; }
+
+        public int Tag { get; set; } = 1;
+
+        public byte TarsType { get; set; }
     }
 }
