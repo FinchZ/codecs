@@ -84,6 +84,11 @@ namespace Tars.Net.Codecs
             }
         }
 
+        public void SetEncoding(Encoding encoding)
+        {
+            
+        }
+
         public void Write(short n, int tag)
         {
             Reserve(4);

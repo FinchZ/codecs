@@ -36,6 +36,12 @@ namespace Tars.Net.Codecs
         }
         public void Wrap(byte[] bs) =>
             buffer = Unpooled.WrappedBuffer(bs);
+
+        public void SetEncoding(Encoding encoding)
+        {
+            sServerEncoding = encoding;
+        }
+
         /// <summary>
         /// 读取数据头
         /// </summary>

@@ -4,6 +4,6 @@ namespace Tars.Net.Codecs
 {
     public interface ITarsConvertCreatorRoot
     {
-        ITarsStreamConvert Create((Type, short) arg);
+        ITarsStreamConvert Create((Type, short) options);
     }
 }
