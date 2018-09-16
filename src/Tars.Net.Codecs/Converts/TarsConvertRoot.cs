@@ -40,13 +40,13 @@ namespace Tars.Net.Codecs
 
         public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
         {
-            var op = options ?? TarsConvertOptions.Default;
+            var op = options ?? new TarsConvertOptions();
             GetConvert(op.Codec, obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
         }
 
         public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)
         {
-            var op = options ?? TarsConvertOptions.Default;
+            var op = options ?? new TarsConvertOptions();
             return GetConvert(op.Codec, type, op).Deserialize(buffer, type, order, isRequire, op);
         }
     }
