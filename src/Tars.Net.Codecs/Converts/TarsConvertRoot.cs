@@ -33,36 +33,21 @@ namespace Tars.Net.Codecs
             });
         }
 
-        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null, Codec codec = Codec.Tars)
-        {
-            var op = options ?? TarsConvertOptions.Default;
-            GetConvert(codec, obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
-        }
-
-        public bool Accept((Type, short) options)
+        public bool Accept((Codec, Type, short) options)
         {
             return true;
         }
 
-        public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null, Codec codec = Codec.Tars)
+        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
         {
             var op = options ?? TarsConvertOptions.Default;
-            return GetConvert(codec, type, op).Deserialize(buffer, type, order, isRequire, op);
-        }
-
-        public bool Accept((Codec, Type, short) options)
-        {
-            throw new NotImplementedException();
+            GetConvert(op.Codec, obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
         }
 
         public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)
         {
-            throw new NotImplementedException();
-        }
-
-        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
-        {
-            throw new NotImplementedException();
+            var op = options ?? TarsConvertOptions.Default;
+            return GetConvert(op.Codec, type, op).Deserialize(buffer, type, order, isRequire, op);
         }
     }
 }
