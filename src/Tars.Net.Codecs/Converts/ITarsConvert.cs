@@ -11,6 +11,6 @@ namespace Tars.Net.Codecs
 
         object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null);
 
-        IByteBuffer Serialize(object obj, int order, bool isRequire = true, TarsConvertOptions options = null);
+        void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null);
     }
 }

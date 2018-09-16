@@ -19,7 +19,7 @@ namespace Tars.Net.Codecs
 
         public abstract object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null);
 
-        public abstract IByteBuffer Serialize(object obj, int order, bool isRequire = true, TarsConvertOptions options = null);
+        public abstract void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null);
 
         public void Reserve(IByteBuffer buffer, int len)
         {
@@ -78,13 +78,13 @@ namespace Tars.Net.Codecs
             return DeserializeT(buffer, order, isRequire, options);
         }
 
-        public override IByteBuffer Serialize(object obj, int order, bool isRequire = true, TarsConvertOptions options = null)
+        public override void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
         {
-            return SerializeT((T)obj, order, isRequire, options);
+            SerializeT((T)obj, buffer, order, isRequire, options);
         }
 
         public abstract T DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
 
-        public abstract IByteBuffer SerializeT(T obj, int order, bool isRequire, TarsConvertOptions options);
+        public abstract void SerializeT(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
     }
 }

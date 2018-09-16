@@ -31,15 +31,15 @@ namespace Tars.Net.Codecs
             });
         }
 
-        public IByteBuffer Serialize(object obj, int order, bool isRequire = true, TarsConvertOptions options = null)
+        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
         {
             var op = options ?? TarsConvertOptions.Default;
-            return GetConvert(obj.GetType(), op).Serialize(obj, order, isRequire, op);
+            GetConvert(obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
         }
 
         public bool Accept((Type, short) options)
         {
-            throw new NotImplementedException();
+            return true;
         }
 
         public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)

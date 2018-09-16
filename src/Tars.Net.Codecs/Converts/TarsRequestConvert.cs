@@ -40,21 +40,19 @@ namespace Tars.Net.Codecs
             return req;
         }
 
-        public override IByteBuffer SerializeT(Request obj, int order, bool isRequire, TarsConvertOptions options)
+        public override void SerializeT(Request obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
-            var buffer = Unpooled.Buffer(128);
-            convertRoot.Serialize(obj.Version, 1, true, options);
-            convertRoot.Serialize(obj.PacketType, 2, true, options);
-            convertRoot.Serialize(obj.MessageType, 3, true, options);
-            convertRoot.Serialize(obj.RequestId, 4, true, options);
-            convertRoot.Serialize(obj.ServantName, 5, true, options);
-            convertRoot.Serialize(obj.FuncName, 6, true, options);
+            convertRoot.Serialize(obj.Version, buffer, 1, true, options);
+            convertRoot.Serialize(obj.PacketType, buffer, 2, true, options);
+            convertRoot.Serialize(obj.MessageType, buffer, 3, true, options);
+            convertRoot.Serialize(obj.RequestId, buffer, 4, true, options);
+            convertRoot.Serialize(obj.ServantName, buffer, 5, true, options);
+            convertRoot.Serialize(obj.FuncName, buffer, 6, true, options);
             // todo : use metadata to Serialize content
             //stream.Write(EncodeRequestContent(req, charsetName), 7);
-            convertRoot.Serialize(obj.Timeout, 8, true, options);
-            convertRoot.Serialize(obj.Context, 9, true, options);
-            convertRoot.Serialize(obj.Status, 10, true, options);
-            return buffer;
+            convertRoot.Serialize(obj.Timeout, buffer, 8, true, options);
+            convertRoot.Serialize(obj.Context, buffer, 9, true, options);
+            convertRoot.Serialize(obj.Status, buffer, 10, true, options);
         }
     }
 }

@@ -12,6 +12,14 @@ namespace Tars.Net.Codecs
             return (T)convert.Deserialize(buffer, typeof(T), order, isRequire, options);
         }
 
+        public static IByteBuffer Serialize(this ITarsConvert convert, object obj, int order,
+            bool isRequire = true, TarsConvertOptions options = null)
+        {
+            var buffer = Unpooled.Buffer(128);
+            convert.Serialize(obj, buffer, order, isRequire, options);
+            return buffer;
+        }
+
         public static IServiceCollection AddTarsCodecs(this IServiceCollection services)
         {
             services.TryAddSingleton<ITarsConvertRoot, TarsConvertRoot>();
