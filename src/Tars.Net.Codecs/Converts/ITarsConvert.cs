@@ -5,8 +5,12 @@ namespace Tars.Net.Codecs
 {
     public interface ITarsConvert
     {
-        IByteBuffer Serialize(object obj, TarsConvertOptions options = null);
+        int Order { get; }
 
-        object Deserialize(IByteBuffer buffer, Type type, TarsConvertOptions options = null);
+        bool Accept((Type, short) options);
+
+        object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null);
+
+        IByteBuffer Serialize(object obj, int order, bool isRequire = true, TarsConvertOptions options = null);
     }
 }
