@@ -7,7 +7,9 @@ namespace Tars.Net.Codecs
     {
         int Order { get; }
 
-        bool Accept((Type, short) options);
+        Codec Codec { get; }
+
+        bool Accept((Codec, Type, short) options);
 
         object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null);
 

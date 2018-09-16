@@ -15,9 +15,11 @@ namespace Tars.Net.Codecs
             metadata = provider.GetRequiredService<IRpcMetadata>();
         }
 
-        public override bool AcceptVersion(short version)
+        public override short Version => (short)TarsCodecsVersion.V1;
+
+        public override bool AcceptT(Type type, short version)
         {
-            return true;
+            return type == typeof(Request);
         }
 
         public override Request DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)

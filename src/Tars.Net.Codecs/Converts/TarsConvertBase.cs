@@ -15,11 +15,18 @@ namespace Tars.Net.Codecs
 
         public virtual int Order => 0;
 
-        public abstract bool Accept((Type, short) options);
+        public virtual Codec Codec => Codec.Tars;
 
         public abstract object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null);
 
         public abstract void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null);
+
+        public virtual bool Accept((Codec, Type, short) options)
+        {
+            return options.Item1 == Codec.Tars && AcceptT(options.Item2, options.Item3);
+        }
+
+        public abstract bool AcceptT(Type type, short version);
 
         public void Reserve(IByteBuffer buffer, int len)
         {
@@ -62,16 +69,16 @@ namespace Tars.Net.Codecs
 
     public abstract class TarsConvertBase<T> : TarsConvertBase
     {
+        public abstract short Version { get; }
+
         public TarsConvertBase(IServiceProvider provider) : base(provider)
         {
         }
 
-        public override bool Accept((Type, short) options)
+        public override bool AcceptT(Type type, short version)
         {
-            return options.Item1 == typeof(T) && AcceptVersion(options.Item2);
+            return type == typeof(T) && Version == version;
         }
-
-        public abstract bool AcceptVersion(short version);
 
         public override object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)
         {

@@ -8,19 +8,21 @@ namespace Tars.Net.Codecs
 {
     public class TarsConvertRoot : ITarsConvertRoot
     {
-        private readonly ConcurrentDictionary<(Type, short), ITarsConvert> dict = new ConcurrentDictionary<(Type, short), ITarsConvert>();
+        private readonly ConcurrentDictionary<(Codec, Type, short), ITarsConvert> dict = new ConcurrentDictionary<(Codec, Type, short), ITarsConvert>();
         private readonly ITarsConvert[] converts;
 
-        public int Order => throw new NotImplementedException();
+        public int Order => 0;
+
+        public Codec Codec => Codec.Tars;
 
         public TarsConvertRoot(IEnumerable<ITarsConvert> converts)
         {
             this.converts = converts.OrderBy(i => i.Order).ToArray();
         }
 
-        private ITarsConvert GetConvert(Type type, TarsConvertOptions options)
+        private ITarsConvert GetConvert(Codec codec, Type type, TarsConvertOptions options)
         {
-            return dict.GetOrAdd((type, options.Version), (op) =>
+            return dict.GetOrAdd((codec, type, options.Version), (op) =>
             {
                 var convert = converts.FirstOrDefault(i => i.Accept(op));
                 if (convert == null)
@@ -31,10 +33,10 @@ namespace Tars.Net.Codecs
             });
         }
 
-        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
+        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null, Codec codec = Codec.Tars)
         {
             var op = options ?? TarsConvertOptions.Default;
-            GetConvert(obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
+            GetConvert(codec, obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
         }
 
         public bool Accept((Type, short) options)
@@ -42,10 +44,25 @@ namespace Tars.Net.Codecs
             return true;
         }
 
-        public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)
+        public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null, Codec codec = Codec.Tars)
         {
             var op = options ?? TarsConvertOptions.Default;
-            return GetConvert(type, op).Deserialize(buffer, type, order, isRequire, op);
+            return GetConvert(codec, type, op).Deserialize(buffer, type, order, isRequire, op);
+        }
+
+        public bool Accept((Codec, Type, short) options)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
+        {
+            throw new NotImplementedException();
         }
     }
 }
