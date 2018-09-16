@@ -15,24 +15,53 @@ namespace Tars.Net.Codecs
             metadata = provider.GetRequiredService<IRpcMetadata>();
         }
 
-        public override (int order, Request value) Deserialize(IByteBuffer buffer, TarsConvertOptions options)
+        public override Request Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            var req = new Request
+            var req = new Request();
+            options.Tag = 1;
+            while (options.Tag != 0 && buffer.IsReadable())
             {
-                //Version = convertRoot.Deserialize<short>(buffer, 1, options),
-                //PacketType = convertRoot.Deserialize<byte>(buffer, 2, options),
-                //MessageType = convertRoot.Deserialize<int>(buffer, 3, options),
-                //RequestId = convertRoot.Deserialize<int>(buffer, 4, options),
-                //ServantName = convertRoot.Deserialize<string>(buffer, 5, options),
-                //FuncName = convertRoot.Deserialize<string>(buffer, 6, options),
-
-                //// todo : use metadata to Deserialize content
-                ////req.Buffer = stream.ReadByteArray(7);//数据
-                //Timeout = convertRoot.Deserialize<int>(buffer, 8, options),
-                //Context = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 9, options),
-                //Status = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 10, options)
-            };
-            return (0, req);
+                var (tarsType, tag, tagType) = convertRoot.ReadHead(buffer);
+                options.Tag = tag;
+                options.TarsType = tarsType;
+                switch (tag)
+                {
+                    case 1:
+                        req.Version = convertRoot.Deserialize<short>(buffer, options);
+                        break;
+                    case 2:
+                        req.PacketType = convertRoot.Deserialize<byte>(buffer, options);
+                        break;
+                    case 3:
+                        req.MessageType = convertRoot.Deserialize<int>(buffer, options);
+                        break;
+                    case 4:
+                        req.RequestId = convertRoot.Deserialize<int>(buffer, options);
+                        break;
+                    case 5:
+                        req.ServantName = convertRoot.Deserialize<string>(buffer, options);
+                        break;
+                    case 6:
+                        req.FuncName = convertRoot.Deserialize<string>(buffer, options);
+                        break;
+                    case 7:
+                        //// todo : use metadata to Deserialize content
+                        ////req.Buffer = stream.ReadByteArray(7);//数据
+                        break;
+                    case 8:
+                        req.Timeout = convertRoot.Deserialize<int>(buffer, options);
+                        break;
+                    case 9:
+                        //req.Context = convertRoot.Deserialize<Dictionary<string, string>>(buffer, options);
+                        break;
+                    case 10:
+                        //req.Status = convertRoot.Deserialize<Dictionary<string, string>>(buffer, options);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return req;
         }
 
         public override void Serialize(Request obj, IByteBuffer buffer, int order, TarsConvertOptions options)

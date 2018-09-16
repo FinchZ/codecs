@@ -9,19 +9,18 @@ namespace Tars.Net.Codecs
         {
         }
 
-        public override (int order, double value) Deserialize(IByteBuffer buffer, TarsConvertOptions options)
+        public override double Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            var (tarsType, tag, tagType) = ReadHead(buffer);
-            switch (tarsType)
+            switch (options.TarsType)
             {
                 case TarsStructBase.ZERO_TAG:
-                    return (tag, 0x0);
+                    return 0x0;
 
                 case TarsStructBase.FLOAT:
-                    return (tag, buffer.ReadFloat());
+                    return buffer.ReadFloat();
 
                 case TarsStructBase.DOUBLE:
-                    return (tag, buffer.ReadDouble());
+                    return buffer.ReadDouble();
 
                 default:
                     throw new TarsDecodeException("type mismatch.");

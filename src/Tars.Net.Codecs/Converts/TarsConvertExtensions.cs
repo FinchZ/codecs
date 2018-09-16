@@ -17,7 +17,14 @@ namespace Tars.Net.Codecs
                 .TryAddEnumerable<ITarsConvert<long>, LongTarsConvert>()
                 .TryAddEnumerable<ITarsConvert<float>, FloatTarsConvert>()
                 .TryAddEnumerable<ITarsConvert<double>, DoubleTarsConvert>()
-                .TryAddEnumerable<ITarsConvert<string>, StringTarsConvert>();
+                .TryAddEnumerable<ITarsConvert<string>, StringTarsConvert>()
+                .TryAddEnumerable<ITarsConvert<byte?>, NullableTarsConvert<byte>>()
+                .TryAddEnumerable<ITarsConvert<bool?>, NullableTarsConvert<bool>>()
+                .TryAddEnumerable<ITarsConvert<short?>, NullableTarsConvert<short>>()
+                .TryAddEnumerable<ITarsConvert<int?>, NullableTarsConvert<int>>()
+                .TryAddEnumerable<ITarsConvert<long?>, NullableTarsConvert<long>>()
+                .TryAddEnumerable<ITarsConvert<float?>, NullableTarsConvert<float>>()
+                .TryAddEnumerable<ITarsConvert<double?>, NullableTarsConvert<double>>();
             return services;
         }
 

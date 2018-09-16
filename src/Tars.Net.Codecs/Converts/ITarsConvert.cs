@@ -9,7 +9,7 @@ namespace Tars.Net.Codecs
 
     public interface ITarsConvert<T> : ICanTarsConvert
     {
-        (int order, T value) Deserialize(IByteBuffer buffer, TarsConvertOptions options);
+        T Deserialize(IByteBuffer buffer, TarsConvertOptions options);
 
         void Serialize(T obj, IByteBuffer buffer, int order, TarsConvertOptions options);
     }

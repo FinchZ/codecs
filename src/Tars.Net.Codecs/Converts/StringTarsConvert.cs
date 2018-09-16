@@ -9,15 +9,14 @@ namespace Tars.Net.Codecs
         {
         }
 
-        public override (int order, string value) Deserialize(IByteBuffer buffer, TarsConvertOptions options)
+        public override string Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            var (tarsType, tag, tagType) = ReadHead(buffer);
-            switch (tarsType)
+            switch (options.TarsType)
             {
                 case TarsStructBase.STRING1:
                     {
                         int len = buffer.ReadByte();
-                        return (tag, buffer.ReadString(len, options.Encoding));
+                        return buffer.ReadString(len, options.Encoding);
                     }
                 case TarsStructBase.STRING4:
                     {
@@ -27,7 +26,7 @@ namespace Tars.Net.Codecs
                             throw new TarsDecodeException("string too long: " + len);
                         }
 
-                        return (tag, buffer.ReadString(len, options.Encoding));
+                        return buffer.ReadString(len, options.Encoding);
                     }
                 default:
                     throw new TarsDecodeException("type mismatch.");

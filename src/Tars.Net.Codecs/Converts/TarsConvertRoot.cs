@@ -49,11 +49,25 @@ namespace Tars.Net.Codecs
             serialize.Invoke(instance, obj, buffer, order, op);
         }
 
-        public (int order, T value) Deserialize<T>(IByteBuffer buffer, TarsConvertOptions options)
+        public T Deserialize<T>(IByteBuffer buffer, TarsConvertOptions options)
         {
             var op = options ?? new TarsConvertOptions();
             var (serialize, deserialize, instance) = GetConvert(op.Codec, typeof(T), op);
-            return ((int order, T value))serialize.Invoke(instance, buffer, op);
+            return (T)serialize.Invoke(instance, buffer, op);
+        }
+
+        public (byte tarsType, int tag, TagType tagType) ReadHead(IByteBuffer buffer)
+        {
+            byte b = buffer.ReadByte();
+            byte tarsType = (byte)(b & 15);
+            int tag = ((b & (15 << 4)) >> 4);
+            var tagType = TagType.Tag1;
+            if (tag == 15)
+            {
+                tag = buffer.ReadByte() & 0x00ff;
+                tagType = TagType.Tag2;
+            }
+            return (tarsType, tag, tagType);
         }
     }
 }

@@ -42,21 +42,7 @@ namespace Tars.Net.Codecs
             }
         }
 
-        public (byte tarsType, int tag, TagType tagType) ReadHead(IByteBuffer buffer)
-        {
-            byte b = buffer.ReadByte();
-            byte tarsType = (byte)(b & 15);
-            int tag = ((b & (15 << 4)) >> 4);
-            var tagType = TagType.Tag1;
-            if (tag == 15)
-            {
-                tag = buffer.ReadByte() & 0x00ff;
-                tagType = TagType.Tag2;
-            }
-            return (tarsType, tag, tagType);
-        }
-
-        public abstract (int order, T value) Deserialize(IByteBuffer buffer, TarsConvertOptions options);
+        public abstract T Deserialize(IByteBuffer buffer, TarsConvertOptions options);
 
         public abstract void Serialize(T obj, IByteBuffer buffer, int order, TarsConvertOptions options);
     }

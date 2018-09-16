@@ -9,5 +9,9 @@ namespace Tars.Net.Codecs
         public short Version { get; set; } = TarsCodecsConstant.VERSION3;
 
         public Codec Codec { get; set; } = Codec.Tars;
+
+        public bool HasValue { get; set; } = true;
+        public int Tag { get; internal set; }
+        public byte TarsType { get; internal set; }
     }
 }
