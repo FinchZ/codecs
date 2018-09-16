@@ -42,11 +42,11 @@ namespace Tars.Net.Codecs
             return true;
         }
 
-        public void Serialize<T>(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public void Serialize<T>(T obj, IByteBuffer buffer, int order, TarsConvertOptions options)
         {
             var op = options ?? new TarsConvertOptions();
             var ( serialize,  deserialize,  instance) = GetConvert(op.Codec, typeof(T), op);
-            serialize.Invoke(instance, obj, buffer, order, isRequire, op);
+            serialize.Invoke(instance, obj, buffer, order, op);
         }
 
         public (int order, T value) Deserialize<T>(IByteBuffer buffer, TarsConvertOptions options)

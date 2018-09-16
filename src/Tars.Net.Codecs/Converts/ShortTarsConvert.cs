@@ -28,11 +28,11 @@ namespace Tars.Net.Codecs
             }
         }
 
-        public override void Serialize(short obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void Serialize(short obj, IByteBuffer buffer, int order, TarsConvertOptions options)
         {
             if (obj >= byte.MinValue && obj <= byte.MaxValue)
             {
-                convertRoot.Serialize((byte)obj, buffer, order, isRequire, options);
+                convertRoot.Serialize((byte)obj, buffer, order, options);
             }
             else
             {

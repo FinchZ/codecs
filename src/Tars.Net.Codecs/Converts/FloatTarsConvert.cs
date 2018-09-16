@@ -25,7 +25,7 @@ namespace Tars.Net.Codecs
             }
         }
 
-        public override void Serialize(float obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void Serialize(float obj, IByteBuffer buffer, int order, TarsConvertOptions options)
         {
             Reserve(buffer, 6);
             if (obj == 0)

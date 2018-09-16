@@ -58,6 +58,6 @@ namespace Tars.Net.Codecs
 
         public abstract (int order, T value) Deserialize(IByteBuffer buffer, TarsConvertOptions options);
 
-        public abstract void Serialize(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
+        public abstract void Serialize(T obj, IByteBuffer buffer, int order, TarsConvertOptions options);
     }
 }
