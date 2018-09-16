@@ -52,7 +52,7 @@ namespace Tars.Net.Codecs
             }
         }
 
-        public (byte tarsType, int tag, TagType tagType) ReadHead(IByteBuffer buffer, HeadData hd)
+        public (byte tarsType, int tag, TagType tagType) ReadHead(IByteBuffer buffer)
         {
             byte b = buffer.ReadByte();
             byte tarsType = (byte)(b & 15);
@@ -69,15 +69,18 @@ namespace Tars.Net.Codecs
 
     public abstract class TarsConvertBase<T> : TarsConvertBase
     {
-        public abstract short Version { get; }
-
         public TarsConvertBase(IServiceProvider provider) : base(provider)
         {
         }
 
         public override bool AcceptT(Type type, short version)
         {
-            return type == typeof(T) && Version == version;
+            return type == typeof(T) && AcceptVersion(version);
+        }
+
+        public virtual bool AcceptVersion(short version)
+        {
+            return true;
         }
 
         public override object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)

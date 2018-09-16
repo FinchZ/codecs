@@ -23,7 +23,9 @@ namespace Tars.Net.Codecs
         public static IServiceCollection AddTarsCodecs(this IServiceCollection services)
         {
             services.TryAddSingleton<ITarsConvertRoot, TarsConvertRoot>();
-            services.TryAddEnumerable<ITarsConvert, TarsRequestConvert>();
+            services.TryAddEnumerable<ITarsConvert, RequestTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, ByteTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, BoolTarsConvert>();
             return services;
         }
 

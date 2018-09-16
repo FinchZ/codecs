@@ -6,20 +6,13 @@ using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
 {
-    public class TarsRequestConvert : TarsConvertBase<Request>
+    public class RequestTarsConvert : TarsConvertBase<Request>
     {
         private readonly IRpcMetadata metadata;
 
-        public TarsRequestConvert(IServiceProvider provider) : base(provider)
+        public RequestTarsConvert(IServiceProvider provider) : base(provider)
         {
             metadata = provider.GetRequiredService<IRpcMetadata>();
-        }
-
-        public override short Version => (short)TarsCodecsVersion.V1;
-
-        public override bool AcceptT(Type type, short version)
-        {
-            return type == typeof(Request);
         }
 
         public override Request DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
