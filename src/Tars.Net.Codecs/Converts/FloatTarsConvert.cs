@@ -3,13 +3,13 @@ using System;
 
 namespace Tars.Net.Codecs
 {
-    public class ByteTarsConvert : TarsConvertBase<byte>
+    public class FloatTarsConvert : TarsConvertBase<float>
     {
-        public ByteTarsConvert(IServiceProvider provider) : base(provider)
+        public FloatTarsConvert(IServiceProvider provider) : base(provider)
         {
         }
 
-        public override byte DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
+        public override float DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
         {
             var (tarsType, tag, tagType) = ReadHead(buffer);
             order = tag;
@@ -18,25 +18,25 @@ namespace Tars.Net.Codecs
                 case TarsStructBase.ZERO_TAG:
                     return 0x0;
 
-                case TarsStructBase.BYTE:
-                    return buffer.ReadByte();
+                case TarsStructBase.FLOAT:
+                    return buffer.ReadFloat();
 
                 default:
                     throw new TarsDecodeException("type mismatch.");
             }
         }
 
-        public override void SerializeT(byte obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void SerializeT(float obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
-            Reserve(buffer, 3);
+            Reserve(buffer, 6);
             if (obj == 0)
             {
                 WriteHead(buffer, TarsStructBase.ZERO_TAG, order);
             }
             else
             {
-                WriteHead(buffer, TarsStructBase.BYTE, order);
-                buffer.WriteByte(obj);
+                WriteHead(buffer, TarsStructBase.FLOAT, order);
+                buffer.WriteFloat(obj);
             }
         }
     }

@@ -9,9 +9,9 @@ namespace Tars.Net.Codecs
         {
         }
 
-        public override bool DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override bool DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
         {
-            byte c = convertRoot.Deserialize<byte>(buffer, order, isRequire, options);
+            byte c = convertRoot.Deserialize<byte>(buffer, out order, options);
             return c != 0;
         }
 

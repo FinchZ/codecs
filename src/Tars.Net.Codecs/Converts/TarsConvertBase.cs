@@ -17,7 +17,7 @@ namespace Tars.Net.Codecs
 
         public virtual Codec Codec => Codec.Tars;
 
-        public abstract object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null);
+        public abstract object Deserialize(IByteBuffer buffer, Type type, out int order, TarsConvertOptions options = null);
 
         public abstract void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null);
 
@@ -83,9 +83,9 @@ namespace Tars.Net.Codecs
             return true;
         }
 
-        public override object Deserialize(IByteBuffer buffer, Type type, int order, bool isRequire = true, TarsConvertOptions options = null)
+        public override object Deserialize(IByteBuffer buffer, Type type, out int order, TarsConvertOptions options = null)
         {
-            return DeserializeT(buffer, order, isRequire, options);
+            return DeserializeT(buffer, out order, options);
         }
 
         public override void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
@@ -93,7 +93,7 @@ namespace Tars.Net.Codecs
             SerializeT((T)obj, buffer, order, isRequire, options);
         }
 
-        public abstract T DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
+        public abstract T DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options);
 
         public abstract void SerializeT(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
     }

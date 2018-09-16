@@ -15,22 +15,23 @@ namespace Tars.Net.Codecs
             metadata = provider.GetRequiredService<IRpcMetadata>();
         }
 
-        public override Request DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override Request DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
         {
+            order = 0;
             var req = new Request
             {
-                Version = convertRoot.Deserialize<short>(buffer, 1, true, options),
-                PacketType = convertRoot.Deserialize<byte>(buffer, 2, true, options),
-                MessageType = convertRoot.Deserialize<int>(buffer, 3, true, options),
-                RequestId = convertRoot.Deserialize<int>(buffer, 4, true, options),
-                ServantName = convertRoot.Deserialize<string>(buffer, 5, true, options),
-                FuncName = convertRoot.Deserialize<string>(buffer, 6, true, options),
+                //Version = convertRoot.Deserialize<short>(buffer, 1, true, options),
+                //PacketType = convertRoot.Deserialize<byte>(buffer, 2, true, options),
+                //MessageType = convertRoot.Deserialize<int>(buffer, 3, true, options),
+                //RequestId = convertRoot.Deserialize<int>(buffer, 4, true, options),
+                //ServantName = convertRoot.Deserialize<string>(buffer, 5, true, options),
+                //FuncName = convertRoot.Deserialize<string>(buffer, 6, true, options),
 
-                // todo : use metadata to Deserialize content
-                //req.Buffer = stream.ReadByteArray(7, true);//数据
-                Timeout = convertRoot.Deserialize<int>(buffer, 8, true, options),
-                Context = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 9, true, options),
-                Status = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 10, true, options)
+                //// todo : use metadata to Deserialize content
+                ////req.Buffer = stream.ReadByteArray(7, true);//数据
+                //Timeout = convertRoot.Deserialize<int>(buffer, 8, true, options),
+                //Context = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 9, true, options),
+                //Status = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 10, true, options)
             };
             return req;
         }

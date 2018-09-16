@@ -3,13 +3,13 @@ using System;
 
 namespace Tars.Net.Codecs
 {
-    public class IntTarsConvert : TarsConvertBase<int>
+    public class LongTarsConvert : TarsConvertBase<long>
     {
-        public IntTarsConvert(IServiceProvider provider) : base(provider)
+        public LongTarsConvert(IServiceProvider provider) : base(provider)
         {
         }
 
-        public override int DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
+        public override long DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
         {
             var (tarsType, tag, tagType) = ReadHead(buffer);
             order = tag;
@@ -27,22 +27,25 @@ namespace Tars.Net.Codecs
                 case TarsStructBase.INT:
                     return buffer.ReadInt();
 
+                case TarsStructBase.LONG:
+                    return buffer.ReadLong();
+
                 default:
                     throw new TarsDecodeException("type mismatch.");
             }
         }
 
-        public override void SerializeT(int obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void SerializeT(long obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
-            if (obj >= short.MinValue && obj <= short.MaxValue)
+            if (obj >= int.MinValue && obj <= int.MaxValue)
             {
-                convertRoot.Serialize((short)obj, order);
+                convertRoot.Serialize((int)obj, order);
             }
             else
             {
-                Reserve(buffer, 6);
-                WriteHead(buffer, TarsStructBase.INT, order);
-                buffer.WriteInt(obj);
+                Reserve(buffer, 10);
+                WriteHead(buffer, TarsStructBase.LONG, order);
+                buffer.WriteLong(obj);
             }
         }
     }

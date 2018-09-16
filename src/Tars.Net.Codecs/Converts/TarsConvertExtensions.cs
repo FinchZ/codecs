@@ -6,10 +6,10 @@ namespace Tars.Net.Codecs
 {
     public static class TarsConvertExtensions
     {
-        public static T Deserialize<T>(this ITarsConvert convert, IByteBuffer buffer, int order,
-            bool isRequire = true, TarsConvertOptions options = null)
+        public static T Deserialize<T>(this ITarsConvert convert, IByteBuffer buffer, out int order,
+            TarsConvertOptions options = null)
         {
-            return (T)convert.Deserialize(buffer, typeof(T), order, isRequire, options);
+            return (T)convert.Deserialize(buffer, typeof(T), out order, options);
         }
 
         public static IByteBuffer Serialize(this ITarsConvert convert, object obj, int order,
@@ -25,7 +25,13 @@ namespace Tars.Net.Codecs
             services.TryAddSingleton<ITarsConvertRoot, TarsConvertRoot>();
             services.TryAddEnumerable<ITarsConvert, RequestTarsConvert>()
                 .TryAddEnumerable<ITarsConvert, ByteTarsConvert>()
-                .TryAddEnumerable<ITarsConvert, BoolTarsConvert>();
+                .TryAddEnumerable<ITarsConvert, BoolTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, ShortTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, IntTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, LongTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, FloatTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, DoubleTarsConvert>()
+                .TryAddEnumerable<ITarsConvert, StringTarsConvert>(); 
             return services;
         }
 

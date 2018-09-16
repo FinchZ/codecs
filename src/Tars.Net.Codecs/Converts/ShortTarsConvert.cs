@@ -9,9 +9,10 @@ namespace Tars.Net.Codecs
         {
         }
 
-        public override short DeserializeT(IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override short DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
         {
             var (tarsType, tag, tagType) = ReadHead(buffer);
+            order = tag;
             switch (tarsType)
             {
                 case TarsStructBase.ZERO_TAG:
