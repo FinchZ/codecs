@@ -1,18 +1,16 @@
 ﻿using DotNetty.Buffers;
-using System;
 
 namespace Tars.Net.Codecs
 {
-    public interface ITarsConvert
+    public interface ICanTarsConvert
     {
-        int Order { get; }
+        bool Accept(Codec codec, short version);
+    }
 
-        Codec Codec { get; }
+    public interface ITarsConvert<T> : ICanTarsConvert
+    {
+        (int order, T value) Deserialize(IByteBuffer buffer, TarsConvertOptions options);
 
-        bool Accept((Codec, Type, short) options);
-
-        object Deserialize(IByteBuffer buffer, Type type, out int order, TarsConvertOptions options = null);
-
-        void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null);
+        void Serialize(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
     }
 }

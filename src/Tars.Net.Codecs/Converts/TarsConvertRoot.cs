@@ -1,35 +1,39 @@
-﻿using DotNetty.Buffers;
+﻿using AspectCore.Extensions.Reflection;
+using DotNetty.Buffers;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Tars.Net.Codecs
 {
     public class TarsConvertRoot : ITarsConvertRoot
     {
-        private readonly ConcurrentDictionary<(Codec, Type, short), ITarsConvert> dict = new ConcurrentDictionary<(Codec, Type, short), ITarsConvert>();
-        private readonly ITarsConvert[] converts;
+        private readonly ConcurrentDictionary<(Codec, short), (MethodReflector serialize, MethodReflector deserialize, object instance)> dict
+            = new ConcurrentDictionary<(Codec, short), (MethodReflector serialize, MethodReflector deserialize, object instance)>();
+
+        private readonly IServiceProvider provider;
 
         public int Order => 0;
 
         public Codec Codec => Codec.Tars;
 
-        public TarsConvertRoot(IEnumerable<ITarsConvert> converts)
+        public TarsConvertRoot(IServiceProvider provider)
         {
-            this.converts = converts.OrderBy(i => i.Order).ToArray();
+            this.provider = provider;
         }
 
-        private ITarsConvert GetConvert(Codec codec, Type type, TarsConvertOptions options)
+        private (MethodReflector serialize, MethodReflector deserialize, object instance) GetConvert(Codec codec, Type type, TarsConvertOptions options)
         {
-            return dict.GetOrAdd((codec, type, options.Version), (op) =>
+            return dict.GetOrAdd((codec, options.Version), (op) =>
             {
-                var convert = converts.FirstOrDefault(i => i.Accept(op));
+                var convert = provider.GetServices(type).FirstOrDefault(i => ((ICanTarsConvert)i).Accept(op.Item1, op.Item2));
                 if (convert == null)
                 {
                     throw new NotSupportedException($"Codecs not supported {options}.");
                 }
-                return convert;
+
+                return (type.GetMethod("Serialize").GetReflector(), type.GetMethod("Deserialize").GetReflector(), convert);
             });
         }
 
@@ -38,16 +42,18 @@ namespace Tars.Net.Codecs
             return true;
         }
 
-        public void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
+        public void Serialize<T>(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
             var op = options ?? new TarsConvertOptions();
-            GetConvert(op.Codec, obj.GetType(), op).Serialize(obj, buffer, order, isRequire, op);
+            var ( serialize,  deserialize,  instance) = GetConvert(op.Codec, typeof(T), op);
+            serialize.Invoke(instance, obj, buffer, order, isRequire, op);
         }
 
-        public object Deserialize(IByteBuffer buffer, Type type, out int order, TarsConvertOptions options = null)
+        public (int order, T value) Deserialize<T>(IByteBuffer buffer, TarsConvertOptions options)
         {
             var op = options ?? new TarsConvertOptions();
-            return GetConvert(op.Codec, type, op).Deserialize(buffer, type, out order, op);
+            var (serialize, deserialize, instance) = GetConvert(op.Codec, typeof(T), op);
+            return ((int order, T value))serialize.Invoke(instance, buffer, op);
         }
     }
 }

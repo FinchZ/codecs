@@ -9,24 +9,23 @@ namespace Tars.Net.Codecs
         {
         }
 
-        public override byte DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
+        public override (int order, byte value) Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var (tarsType, tag, tagType) = ReadHead(buffer);
-            order = tag;
             switch (tarsType)
             {
                 case TarsStructBase.ZERO_TAG:
-                    return 0x0;
+                    return (tag, 0x0);
 
                 case TarsStructBase.BYTE:
-                    return buffer.ReadByte();
+                    return (tag, buffer.ReadByte());
 
                 default:
                     throw new TarsDecodeException("type mismatch.");
             }
         }
 
-        public override void SerializeT(byte obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void Serialize(byte obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
             Reserve(buffer, 3);
             if (obj == 0)

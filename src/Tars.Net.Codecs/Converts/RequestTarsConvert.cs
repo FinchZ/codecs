@@ -15,9 +15,8 @@ namespace Tars.Net.Codecs
             metadata = provider.GetRequiredService<IRpcMetadata>();
         }
 
-        public override Request DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
+        public override (int order, Request value) Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            order = 0;
             var req = new Request
             {
                 //Version = convertRoot.Deserialize<short>(buffer, 1, true, options),
@@ -33,10 +32,10 @@ namespace Tars.Net.Codecs
                 //Context = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 9, true, options),
                 //Status = convertRoot.Deserialize<Dictionary<string, string>>(buffer, 10, true, options)
             };
-            return req;
+            return (0, req);
         }
 
-        public override void SerializeT(Request obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void Serialize(Request obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
             convertRoot.Serialize(obj.Version, buffer, 1, true, options);
             convertRoot.Serialize(obj.PacketType, buffer, 2, true, options);

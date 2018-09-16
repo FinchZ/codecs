@@ -9,15 +9,15 @@ namespace Tars.Net.Codecs
         {
         }
 
-        public override bool DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options)
+        public override (int order, bool value) Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            byte c = convertRoot.Deserialize<byte>(buffer, out order, options);
-            return c != 0;
+            var (order, value) = convertRoot.Deserialize<byte>(buffer, options);
+            return (order, value != 0);
         }
 
-        public override void SerializeT(bool obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
+        public override void Serialize(bool obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options)
         {
-            convertRoot.Serialize((byte)(obj ? 0x01 : 0), order, isRequire, options);
+            convertRoot.Serialize((byte)(obj ? 0x01 : 0), buffer, order, isRequire, options);
         }
     }
 }

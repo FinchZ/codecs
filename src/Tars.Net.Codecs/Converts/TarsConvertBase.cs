@@ -4,7 +4,7 @@ using System;
 
 namespace Tars.Net.Codecs
 {
-    public abstract class TarsConvertBase : ITarsConvert
+    public abstract class TarsConvertBase<T> : ITarsConvert<T>
     {
         protected readonly ITarsConvertRoot convertRoot;
 
@@ -13,20 +13,10 @@ namespace Tars.Net.Codecs
             convertRoot = provider.GetRequiredService<ITarsConvertRoot>();
         }
 
-        public virtual int Order => 0;
-
-        public virtual Codec Codec => Codec.Tars;
-
-        public abstract object Deserialize(IByteBuffer buffer, Type type, out int order, TarsConvertOptions options = null);
-
-        public abstract void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null);
-
-        public virtual bool Accept((Codec, Type, short) options)
+        public virtual bool Accept(Codec codec, short version)
         {
-            return options.Item1 == Codec.Tars && AcceptT(options.Item2, options.Item3);
+            return codec == Codec.Tars;
         }
-
-        public abstract bool AcceptT(Type type, short version);
 
         public void Reserve(IByteBuffer buffer, int len)
         {
@@ -65,36 +55,9 @@ namespace Tars.Net.Codecs
             }
             return (tarsType, tag, tagType);
         }
-    }
 
-    public abstract class TarsConvertBase<T> : TarsConvertBase
-    {
-        public TarsConvertBase(IServiceProvider provider) : base(provider)
-        {
-        }
+        public abstract (int order, T value) Deserialize(IByteBuffer buffer, TarsConvertOptions options);
 
-        public override bool AcceptT(Type type, short version)
-        {
-            return type == typeof(T) && AcceptVersion(version);
-        }
-
-        public virtual bool AcceptVersion(short version)
-        {
-            return true;
-        }
-
-        public override object Deserialize(IByteBuffer buffer, Type type, out int order, TarsConvertOptions options = null)
-        {
-            return DeserializeT(buffer, out order, options);
-        }
-
-        public override void Serialize(object obj, IByteBuffer buffer, int order, bool isRequire = true, TarsConvertOptions options = null)
-        {
-            SerializeT((T)obj, buffer, order, isRequire, options);
-        }
-
-        public abstract T DeserializeT(IByteBuffer buffer, out int order, TarsConvertOptions options);
-
-        public abstract void SerializeT(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
+        public abstract void Serialize(T obj, IByteBuffer buffer, int order, bool isRequire, TarsConvertOptions options);
     }
 }
