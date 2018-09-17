@@ -8,6 +8,6 @@ namespace Tars.Net.Codecs
 
         void Serialize<T>(T obj, IByteBuffer buffer, TarsConvertOptions options);
 
-        (byte tarsType, int tag, TagType tagType) ReadHead(IByteBuffer buffer);
+        void ReadHead(IByteBuffer buffer, TarsConvertOptions options);
     }
 }

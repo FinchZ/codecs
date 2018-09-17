@@ -18,12 +18,11 @@ namespace Tars.Net.Codecs
         public override Request Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var req = new Request();
-            options.Tag = 1;
-            while (options.Tag != 0 && buffer.IsReadable())
+            var tag = options.Tag = 1;
+            while (tag != 0 && buffer.IsReadable())
             {
-                var (tarsType, tag, tagType) = convertRoot.ReadHead(buffer);
-                options.Tag = tag;
-                options.TarsType = tarsType;
+                convertRoot.ReadHead(buffer, options);
+                tag = options.Tag;
                 switch (tag)
                 {
                     case 1:
@@ -46,16 +45,24 @@ namespace Tars.Net.Codecs
                         break;
                     case 7:
                         //// todo : use metadata to Deserialize content
-                        ////req.Buffer = stream.ReadByteArray(7);//数据
+                        convertRoot.ReadHead(buffer, options);
+                        var contentBuffer = convertRoot.Deserialize<IByteBuffer>(buffer, options);
+                        req.Parameters = new object[req.ParameterTypes.Length];
+                        while (contentBuffer.IsReadable())
+                        {
+                            convertRoot.ReadHead(buffer, options);
+                            //req.Parameters[options.Tag] = convertRoot.Deserialize<>(contentBuffer, options);
+                        }
                         break;
                     case 8:
                         req.Timeout = convertRoot.Deserialize<int>(buffer, options);
                         break;
                     case 9:
-                        //req.Context = convertRoot.Deserialize<Dictionary<string, string>>(buffer, options);
+                        req.Context = convertRoot.Deserialize<IDictionary<string, string>>(buffer, options);
                         break;
                     case 10:
-                        //req.Status = convertRoot.Deserialize<Dictionary<string, string>>(buffer, options);
+                        req.Status = convertRoot.Deserialize<IDictionary<string, string>>(buffer, options);
+                        tag = 0;
                         break;
                     default:
                         break;
@@ -78,9 +85,17 @@ namespace Tars.Net.Codecs
             convertRoot.Serialize(obj.ServantName, buffer, options);
             options.Tag = 6;
             convertRoot.Serialize(obj.FuncName, buffer, options);
-            options.Tag = 7;
+
             // todo : use metadata to Serialize content
-            //stream.Write(EncodeRequestContent(req, charsetName), 7);
+            var contentBuffer = Unpooled.Buffer(128);
+            for (int i = 0; i < obj.ParameterTypes.Length; i++)
+            {
+                options.Tag = obj.ParameterTypes[i].Position;
+                //convertRoot.Serialize<>(obj.Parameters[i], contentBuffer, options);
+            }
+            
+            options.Tag = 7;
+            convertRoot.Serialize(contentBuffer, buffer, options);
             options.Tag = 8;
             convertRoot.Serialize(obj.Timeout, buffer, options);
             options.Tag = 9;
