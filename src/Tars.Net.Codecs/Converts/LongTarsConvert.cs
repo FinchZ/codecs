@@ -1,35 +1,25 @@
 ﻿using DotNetty.Buffers;
-using System;
 
 namespace Tars.Net.Codecs
 {
     public class LongTarsConvert : TarsConvertBase<long>
     {
-        public LongTarsConvert(IServiceProvider provider) : base(provider)
+        private readonly ITarsConvert<int> convert;
+
+        public LongTarsConvert(ITarsConvert<int> convert)
         {
+            this.convert = convert;
         }
 
         public override long Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             switch (options.TarsType)
             {
-                case TarsStructBase.ZERO_TAG:
-                    return 0x0;
-
-                case TarsStructBase.BYTE:
-                    return buffer.ReadByte();
-
-                case TarsStructBase.SHORT:
-                    return buffer.ReadShort();
-
-                case TarsStructBase.INT:
-                    return buffer.ReadInt();
-
                 case TarsStructBase.LONG:
                     return buffer.ReadLong();
 
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    return convert.Deserialize(buffer, options);
             }
         }
 
@@ -37,7 +27,7 @@ namespace Tars.Net.Codecs
         {
             if (obj >= int.MinValue && obj <= int.MaxValue)
             {
-                convertRoot.Serialize((int)obj, buffer, options);
+                convert.Serialize((int)obj, buffer, options);
             }
             else
             {

@@ -1,6 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using DotNetty.Buffers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Tars.Net.Codecs.Converts;
 using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
@@ -26,7 +26,7 @@ namespace Tars.Net.Codecs
                 .TryAddEnumerable<ITarsConvert<long?>, NullableTarsConvert<long>>()
                 .TryAddEnumerable<ITarsConvert<float?>, NullableTarsConvert<float>>()
                 .TryAddEnumerable<ITarsConvert<double?>, NullableTarsConvert<double>>()
-                .TryAddEnumerable<ITarsConvert<double?>, NullableTarsConvert<double>>();
+                .TryAddEnumerable<ITarsConvert<IByteBuffer>, ByteBufferTarsConvert>();
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IListTarsConvert<>), typeof(ListTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IDictionaryTarsConvert<,>), typeof(DictionaryTarsConvert<,>), ServiceLifetime.Singleton));
             return services;

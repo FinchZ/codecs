@@ -1,14 +1,9 @@
 ﻿using DotNetty.Buffers;
-using System;
 
 namespace Tars.Net.Codecs
 {
     public class FloatTarsConvert : TarsConvertBase<float>
     {
-        public FloatTarsConvert(IServiceProvider provider) : base(provider)
-        {
-        }
-
         public override float Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             switch (options.TarsType)

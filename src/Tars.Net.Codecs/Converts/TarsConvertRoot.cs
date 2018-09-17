@@ -45,7 +45,7 @@ namespace Tars.Net.Codecs
         public void Serialize<T>(T obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             var op = options ?? new TarsConvertOptions();
-            var ( serialize,  deserialize,  instance) = GetConvert(op.Codec, typeof(T), op);
+            var (serialize, deserialize, instance) = GetConvert(op.Codec, typeof(T), op);
             serialize.Invoke(instance, obj, buffer, op);
         }
 
@@ -54,35 +54,6 @@ namespace Tars.Net.Codecs
             var op = options ?? new TarsConvertOptions();
             var (serialize, deserialize, instance) = GetConvert(op.Codec, typeof(T), op);
             return (T)serialize.Invoke(instance, buffer, op);
-        }
-
-        public void ReadHead(IByteBuffer buffer, TarsConvertOptions options)
-        {
-            byte b = buffer.ReadByte();
-            byte tarsType = (byte)(b & 15);
-            int tag = ((b & (15 << 4)) >> 4);
-            //var tagType = TagType.Tag1;
-            if (tag == 15)
-            {
-                tag = buffer.ReadByte() & 0x00ff;
-                //tagType = TagType.Tag2;
-            }
-            options.Tag = tag;
-            options.TarsType = tarsType;
-        }
-
-        public (byte tarsType, int tag, TagType tagType) ReadHead(IByteBuffer buffer)
-        {
-            byte b = buffer.ReadByte();
-            byte tarsType = (byte)(b & 15);
-            int tag = ((b & (15 << 4)) >> 4);
-            var tagType = TagType.Tag1;
-            if (tag == 15)
-            {
-                tag = buffer.ReadByte() & 0x00ff;
-                tagType = TagType.Tag2;
-            }
-            return (tarsType, tag, tagType);
         }
     }
 }

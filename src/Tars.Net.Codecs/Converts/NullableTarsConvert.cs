@@ -1,19 +1,21 @@
 ﻿using DotNetty.Buffers;
-using System;
 
 namespace Tars.Net.Codecs
 {
     public class NullableTarsConvert<T> : TarsConvertBase<T?> where T : struct
     {
-        public NullableTarsConvert(IServiceProvider provider) : base(provider)
+        private readonly ITarsConvert<T> convert;
+
+        public NullableTarsConvert(ITarsConvert<T> convert)
         {
+            this.convert = convert;
         }
 
         public override T? Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var old = options.HasValue;
             options.HasValue = false;
-            var value = convertRoot.Deserialize<T>(buffer, options);
+            var value = convert.Deserialize(buffer, options);
             options.HasValue = old;
             return options.HasValue ? (T?)value : null;
         }
@@ -22,7 +24,7 @@ namespace Tars.Net.Codecs
         {
             var old = options.HasValue;
             options.HasValue = obj.HasValue;
-            convertRoot.Serialize(obj.GetValueOrDefault(), buffer, options);
+            convert.Serialize(obj.GetValueOrDefault(), buffer, options);
             options.HasValue = old;
         }
     }

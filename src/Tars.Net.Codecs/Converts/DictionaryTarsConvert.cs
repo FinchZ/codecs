@@ -1,16 +1,20 @@
 ﻿using DotNetty.Buffers;
-using System;
 using System.Collections.Generic;
 
-namespace Tars.Net.Codecs.Converts
+namespace Tars.Net.Codecs
 {
     public interface IDictionaryTarsConvert<K, V> : ITarsConvert<IDictionary<K, V>>
     { }
 
     public class DictionaryTarsConvert<K, V> : TarsConvertBase<IDictionary<K, V>>, IDictionaryTarsConvert<K, V>
     {
-        public DictionaryTarsConvert(IServiceProvider provider) : base(provider)
+        private readonly ITarsConvert<K> kConvert;
+        private readonly ITarsConvert<V> vConvert;
+
+        public DictionaryTarsConvert(ITarsConvert<K> kConvert, ITarsConvert<V> vConvert)
         {
+            this.kConvert = kConvert;
+            this.vConvert = vConvert;
         }
 
         public override IDictionary<K, V> Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -28,10 +32,10 @@ namespace Tars.Net.Codecs.Converts
                         var dict = new Dictionary<K, V>(size);
                         for (int i = 0; i < size; ++i)
                         {
-                            convertRoot.ReadHead(buffer, options);
-                            var k = convertRoot.Deserialize<K>(buffer, options);
-                            convertRoot.ReadHead(buffer, options);
-                            var v = convertRoot.Deserialize<V>(buffer, options);
+                            ReadHead(buffer, options);
+                            var k = kConvert.Deserialize(buffer, options);
+                            ReadHead(buffer, options);
+                            var v = vConvert.Deserialize(buffer, options);
                             if (dict.ContainsKey(k))
                             {
                                 dict[k] = v;
@@ -62,9 +66,9 @@ namespace Tars.Net.Codecs.Converts
                 foreach (var kv in obj)
                 {
                     options.Tag = 0;
-                    convertRoot.Serialize(kv.Key, buffer, options);
+                    kConvert.Serialize(kv.Key, buffer, options);
                     options.Tag = 1;
-                    convertRoot.Serialize(kv.Key, buffer, options);
+                    vConvert.Serialize(kv.Value, buffer, options);
                 }
             }
         }

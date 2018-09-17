@@ -1,18 +1,9 @@
 ﻿using DotNetty.Buffers;
-using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace Tars.Net.Codecs
 {
     public abstract class TarsConvertBase<T> : ITarsConvert<T>
     {
-        protected readonly ITarsConvertRoot convertRoot;
-
-        public TarsConvertBase(IServiceProvider provider)
-        {
-            convertRoot = provider.GetRequiredService<ITarsConvertRoot>();
-        }
-
         public virtual bool Accept(Codec codec, short version)
         {
             return codec == Codec.Tars;
@@ -21,6 +12,21 @@ namespace Tars.Net.Codecs
         public void Reserve(IByteBuffer buffer, int len)
         {
             buffer.EnsureWritable(len, true);
+        }
+
+        public void ReadHead(IByteBuffer buffer, TarsConvertOptions options)
+        {
+            byte b = buffer.ReadByte();
+            byte tarsType = (byte)(b & 15);
+            int tag = ((b & (15 << 4)) >> 4);
+            //var tagType = TagType.Tag1;
+            if (tag == 15)
+            {
+                tag = buffer.ReadByte() & 0x00ff;
+                //tagType = TagType.Tag2;
+            }
+            options.Tag = tag;
+            options.TarsType = tarsType;
         }
 
         public void WriteHead(IByteBuffer buffer, byte type, int tag)

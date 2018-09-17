@@ -1,29 +1,25 @@
 ﻿using DotNetty.Buffers;
-using System;
 
 namespace Tars.Net.Codecs
 {
     public class DoubleTarsConvert : TarsConvertBase<double>
     {
-        public DoubleTarsConvert(IServiceProvider provider) : base(provider)
+        private readonly ITarsConvert<float> convert;
+
+        public DoubleTarsConvert(ITarsConvert<float> convert)
         {
+            this.convert = convert;
         }
 
         public override double Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             switch (options.TarsType)
             {
-                case TarsStructBase.ZERO_TAG:
-                    return 0x0;
-
-                case TarsStructBase.FLOAT:
-                    return buffer.ReadFloat();
-
                 case TarsStructBase.DOUBLE:
                     return buffer.ReadDouble();
 
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    return convert.Deserialize(buffer, options);
             }
         }
 
@@ -31,7 +27,7 @@ namespace Tars.Net.Codecs
         {
             if (obj >= double.MinValue && obj <= double.MaxValue)
             {
-                convertRoot.Serialize((float)obj, buffer, options);
+                convert.Serialize((float)obj, buffer, options);
             }
             else
             {

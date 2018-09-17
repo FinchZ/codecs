@@ -1,16 +1,18 @@
 ﻿using DotNetty.Buffers;
-using System;
 using System.Collections.Generic;
 
-namespace Tars.Net.Codecs.Converts
+namespace Tars.Net.Codecs
 {
     public interface IListTarsConvert<T> : ITarsConvert<IList<T>>
     { }
 
     public class ListTarsConvert<T> : TarsConvertBase<IList<T>>, IListTarsConvert<T>
     {
-        public ListTarsConvert(IServiceProvider provider) : base(provider)
+        private readonly ITarsConvert<T> convert;
+
+        public ListTarsConvert(ITarsConvert<T> convert)
         {
+            this.convert = convert;
         }
 
         public override IList<T> Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -28,8 +30,8 @@ namespace Tars.Net.Codecs.Converts
                         var list = new List<T>(size);
                         for (int i = 0; i < size; ++i)
                         {
-                            convertRoot.ReadHead(buffer, options);
-                            var t = convertRoot.Deserialize<T>(buffer, options);
+                            ReadHead(buffer, options);
+                            var t = convert.Deserialize(buffer, options);
                             list.Add(t);
                         }
                         return list;
@@ -52,7 +54,7 @@ namespace Tars.Net.Codecs.Converts
                 buffer.WriteInt(obj.Count);
                 foreach (var item in obj)
                 {
-                    convertRoot.Serialize(item, buffer, options);
+                    convert.Serialize(item, buffer, options);
                 }
             }
         }
