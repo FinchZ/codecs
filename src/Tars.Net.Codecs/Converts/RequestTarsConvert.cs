@@ -11,10 +11,12 @@ namespace Tars.Net.Codecs
         private readonly ITarsConvert<string> stringConvert;
         private readonly IDictionaryTarsConvert<string, string> dictConvert;
         private readonly ITarsConvert<IByteBuffer> bufferConvert;
+        private readonly ITarsConvertRoot convertRoot;
 
         public RequestTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
-            IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert)
+            IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
+            ITarsConvertRoot convertRoot)
         {
             this.shortConvert = shortConvert;
             this.intConvert = intConvert;
@@ -22,6 +24,7 @@ namespace Tars.Net.Codecs
             this.stringConvert = stringConvert;
             this.dictConvert = dictConvert;
             this.bufferConvert = bufferConvert;
+            this.convertRoot = convertRoot;
         }
 
         public override Request Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -60,14 +63,15 @@ namespace Tars.Net.Codecs
 
                     case 7:
                         ReadHead(buffer, options);
-                        req.Buffer = bufferConvert.Deserialize(buffer, options);
-                        //// todo : use metadata to Deserialize content
-                        //req.Parameters = new object[req.ParameterTypes.Length];
-                        //while (contentBuffer.IsReadable())
-                        //{
-                        //    convertRoot.ReadHead(buffer, options);
-                        //    //req.Parameters[options.Tag] = convertRoot.Deserialize<>(contentBuffer, options);
-                        //}
+                        var contentBuffer = bufferConvert.Deserialize(buffer, options);
+                        req.Parameters = new object[req.ParameterTypes.Length];
+                        while (contentBuffer.IsReadable())
+                        {
+                            ReadHead(buffer, options);
+                            var index = options.Tag - 1;
+                            var type = req.ParameterTypes[index];
+                            req.Parameters[index] = convertRoot.Deserialize(contentBuffer, type.ParameterType, options);
+                        }
                         break;
 
                     case 8:
@@ -105,16 +109,16 @@ namespace Tars.Net.Codecs
             options.Tag = 6;
             stringConvert.Serialize(obj.FuncName, buffer, options);
 
-            // todo : use metadata to Serialize content
-            //var contentBuffer = Unpooled.Buffer(128);
-            //for (int i = 0; i < obj.ParameterTypes.Length; i++)
-            //{
-            //    options.Tag = obj.ParameterTypes[i].Position;
-            //    //convertRoot.Serialize<>(obj.Parameters[i], contentBuffer, options);
-            //}
+            var contentBuffer = Unpooled.Buffer(128);
+            for (int i = 0; i < obj.ParameterTypes.Length; i++)
+            {
+                var p = obj.ParameterTypes[i];
+                options.Tag = p.Position + 1;
+                convertRoot.Serialize(obj.Parameters[i], p.ParameterType, contentBuffer, options);
+            }
 
             options.Tag = 7;
-            bufferConvert.Serialize((IByteBuffer)obj.Buffer, buffer, options);
+            bufferConvert.Serialize(contentBuffer, buffer, options);
             options.Tag = 8;
             intConvert.Serialize(obj.Timeout, buffer, options);
             options.Tag = 9;
