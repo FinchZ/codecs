@@ -1,7 +1,8 @@
 ﻿using DotNetty.Buffers;
+using System;
 using System.Collections.Generic;
 
-namespace Tars.Net.Codecs.Converts
+namespace Tars.Net.Codecs
 {
     public class UniAttributeV3
     {
@@ -19,19 +20,21 @@ namespace Tars.Net.Codecs.Converts
             Temp = convert.Deserialize<IDictionary<string, IByteBuffer>>(buf, options);
         }
 
-        public void Serialize(IDictionary<string, IByteBuffer> obj, IByteBuffer buffer, TarsConvertOptions options)
+        public void Serialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var buf = Unpooled.Buffer(128);
+            var oldTag = options.Tag;
             options.Tag = 0;
-            convert.Serialize(obj, buf, options);
+            convert.Serialize(Temp, buf, options);
+            options.Tag = oldTag;
             convert.Serialize(buf, buffer, options);
         }
 
-        public void Put<T>(string name, T obj, TarsConvertOptions options)
+        public void Put(string name, object obj, Type type, TarsConvertOptions options)
         {
             var buf = Unpooled.Buffer(128);
             options.Tag = 0;
-            convert.Serialize(obj, buf, options);
+            convert.Serialize(obj, type, buf, options);
             if (Temp.ContainsKey(name))
             {
                 Temp[name] = buf;

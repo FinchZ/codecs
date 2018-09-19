@@ -1,9 +1,9 @@
 ﻿namespace Tars.Net.Codecs
 {
-    public enum TarsCodecsVersion : short
+    public class TarsCodecsVersion 
     {
-        V1 = 0x01,
-        V2 = 0x02,
-        V3 = 0x03
+        public const short V1 = 0x01;
+        public const short V2 = 0x02;
+        public const short V3 = 0x03;
     }
 }

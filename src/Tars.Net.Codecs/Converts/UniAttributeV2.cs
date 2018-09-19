@@ -1,18 +1,12 @@
 ﻿using DotNetty.Buffers;
 using System;
 using System.Collections.Generic;
-using Tars.Net.Codecs.Util;
 
-namespace Tars.Net.Codecs.Converts
+namespace Tars.Net.Codecs
 {
     public class UniAttributeV2
     {
-        private IDictionary<string, IDictionary<string, IByteBuffer>> data = new Dictionary<string, IDictionary<string, IByteBuffer>>();
-
-        /// <summary>
-        /// 存储get后的数据 避免多次解析
-        /// </summary>
-        private readonly Dictionary<string, object> cachedData = new Dictionary<string, object>(128);
+        public IDictionary<string, IDictionary<string, IByteBuffer>> Temp { get; set; }
 
         private readonly ITarsConvertRoot convert;
 
@@ -24,18 +18,20 @@ namespace Tars.Net.Codecs.Converts
         public void Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var buf = convert.Deserialize<IByteBuffer>(buffer, options);
-            data = convert.Deserialize<IDictionary<string, IDictionary<string, IByteBuffer>>>(buf, options);
+            Temp = convert.Deserialize<IDictionary<string, IDictionary<string, IByteBuffer>>>(buf, options);
         }
 
         public void Serialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var buf = Unpooled.Buffer(128);
+            var oldTag = options.Tag;
             options.Tag = 0;
-            convert.Serialize(data, buf, options);
+            convert.Serialize(Temp, buf, options);
+            options.Tag = oldTag;
             convert.Serialize(buf, buffer, options);
         }
 
-        public void Put<T>(string name, T obj, TarsConvertOptions options)
+        public void Put(string name, object obj, Type type, TarsConvertOptions options)
         {
             if (name == null)
             {
@@ -50,86 +46,14 @@ namespace Tars.Net.Codecs.Converts
             var buf = Unpooled.Buffer(128);
             options.Tag = 0;
             convert.Serialize(obj, buf, options);
-            List<string> listType = new List<string>();
-            CheckObjectType(listType, obj);
-            string className = BasicClassTypeUtil.TransTypeList(listType);
-            Dictionary<string, IByteBuffer> pair = new Dictionary<string, IByteBuffer>(1) { { className, buf } };
-            cachedData.Remove(name);
-            if (data.ContainsKey(name))
+            Dictionary<string, IByteBuffer> pair = new Dictionary<string, IByteBuffer>(1) { { string.Empty, buf } };
+            if (Temp.ContainsKey(name))
             {
-                data[name] = pair;
+                Temp[name] = pair;
             }
             else
             {
-                data.Add(name, pair);
-            }
-        }
-
-        public void CheckObjectType(List<string> listType, Object t)
-        {
-            Type type = t.GetType();
-            if (type.IsArray)
-            {
-                Type elementType = type.GetElementType();
-                if (!elementType.Equals(TarsSupportBaseType.BYTE))
-                {
-                    throw new ArgumentException("only byte[] is supported");
-                }
-
-                byte[] temp = t as byte[];
-                if (temp.Length > 0)
-                {
-                    listType.Add("list");
-                    CheckObjectType(listType, temp[0]);
-                }
-                else
-                {  //空数组
-                    listType.Add("Array");
-                    listType.Add("?");
-                }
-            }
-            else if (type.IsGenericType)
-            {
-                if (type.Equals(TarsSupportBaseType.LIST))
-                {
-                    listType.Add("list");
-                    List<Object> list = t as List<Object>;
-                    if (list.Count > 0)
-                    {
-                        CheckObjectType(listType, list[0]);
-                    }
-                    else
-                    {
-                        listType.Add("?");
-                    }
-                }
-                else if (type.Equals(TarsSupportBaseType.MAP))
-                {
-                    listType.Add("map");
-                    Dictionary<object, object> map = t as Dictionary<object, object>;
-                    if (map.Count > 0)
-                    {
-                        foreach (var item in map)
-                        {
-                            listType.Add(item.Key.GetType().Name);
-                            CheckObjectType(listType, item.Value);
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        listType.Add("?");
-                        listType.Add("?");
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException("only Dictionary<K,V>,List<T> generic type supported");
-                }
-            }
-            else
-            {
-                listType.Add(type.Name);
+                Temp.Add(name, pair);
             }
         }
     }

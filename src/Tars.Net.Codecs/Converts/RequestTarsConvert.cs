@@ -1,5 +1,7 @@
 ﻿using DotNetty.Buffers;
 using Tars.Net.Metadata;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace Tars.Net.Codecs
 {
@@ -39,6 +41,7 @@ namespace Tars.Net.Codecs
                 {
                     case 1:
                         req.Version = shortConvert.Deserialize(buffer, options);
+                        options.Version = req.Version;
                         break;
 
                     case 2:
@@ -61,16 +64,50 @@ namespace Tars.Net.Codecs
                         req.FuncName = stringConvert.Deserialize(buffer, options);
                         break;
 
-                    case 7:
-                        ReadHead(buffer, options);
-                        var contentBuffer = bufferConvert.Deserialize(buffer, options);
-                        req.Parameters = new object[req.ParameterTypes.Length];
-                        while (contentBuffer.IsReadable())
+                    case 7 when options.Version == TarsCodecsVersion.V1:
                         {
                             ReadHead(buffer, options);
-                            var index = options.Tag - 1;
-                            var type = req.ParameterTypes[index];
-                            req.Parameters[index] = convertRoot.Deserialize(contentBuffer, type.ParameterType, options);
+                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
+                            req.Parameters = new object[req.ParameterTypes.Length];
+                            while (contentBuffer.IsReadable())
+                            {
+                                ReadHead(contentBuffer, options);
+                                var index = options.Tag - 1;
+                                var type = req.ParameterTypes[index];
+                                req.Parameters[index] = convertRoot.Deserialize(contentBuffer, type.ParameterType, options);
+                            }
+                        }
+                        break;
+
+                    case 7 when options.Version == TarsCodecsVersion.V2:
+                        {
+                            ReadHead(buffer, options);
+                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
+                            var uni = new UniAttributeV2(convertRoot);
+                            uni.Deserialize(contentBuffer, options);
+                            req.Parameters = new object[req.ParameterTypes.Length];
+                            foreach (var pt in req.ParameterTypes)
+                            {
+                                var pBuffer = uni.Temp[pt.Name].Values.First();
+                                ReadHead(pBuffer, options);
+                                req.Parameters[pt.Position] = convertRoot.Deserialize(pBuffer, pt.ParameterType, options);
+                            }
+                        }
+                        break;
+
+                    case 7 when options.Version == TarsCodecsVersion.V3:
+                        {
+                            ReadHead(buffer, options);
+                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
+                            var uni = new UniAttributeV3(convertRoot);
+                            uni.Deserialize(contentBuffer, options);
+                            req.Parameters = new object[req.ParameterTypes.Length];
+                            foreach (var pt in req.ParameterTypes)
+                            {
+                                var pBuffer = uni.Temp[pt.Name];
+                                ReadHead(pBuffer, options);
+                                req.Parameters[pt.Position] = convertRoot.Deserialize(pBuffer, pt.ParameterType, options);
+                            }
                         }
                         break;
 
@@ -97,6 +134,7 @@ namespace Tars.Net.Codecs
         public override void Serialize(Request obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             options.Tag = 1;
+            options.Version = obj.Version;
             shortConvert.Serialize(obj.Version, buffer, options);
             options.Tag = 2;
             byteConvert.Serialize(obj.PacketType, buffer, options);
@@ -109,16 +147,54 @@ namespace Tars.Net.Codecs
             options.Tag = 6;
             stringConvert.Serialize(obj.FuncName, buffer, options);
 
-            var contentBuffer = Unpooled.Buffer(128);
-            for (int i = 0; i < obj.ParameterTypes.Length; i++)
+            switch (options.Version)
             {
-                var p = obj.ParameterTypes[i];
-                options.Tag = p.Position + 1;
-                convertRoot.Serialize(obj.Parameters[i], p.ParameterType, contentBuffer, options);
+                case TarsCodecsVersion.V3:
+                    {
+                        var uni = new UniAttributeV3(convertRoot);
+                        uni.Temp = new Dictionary<string, IByteBuffer>(obj.ParameterTypes.Length);
+                        for (int i = 0; i < obj.ParameterTypes.Length; i++)
+                        {
+                            var p = obj.ParameterTypes[i];
+                            uni.Put(p.Name,  obj.Parameters[i], p.ParameterType, options);
+                        }
+
+                        options.Tag = 7;
+                        uni.Serialize(buffer, options);
+                    }
+                    break;
+
+                case TarsCodecsVersion.V2:
+                    {
+                        var uni = new UniAttributeV2(convertRoot);
+                        uni.Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>(obj.ParameterTypes.Length);
+                        for (int i = 0; i < obj.ParameterTypes.Length; i++)
+                        {
+                            var p = obj.ParameterTypes[i];
+                            uni.Put(p.Name, obj.Parameters[i], p.ParameterType, options);
+                        }
+
+                        options.Tag = 7;
+                        uni.Serialize(buffer, options);
+                    }
+                    break;
+
+                default:
+                    {
+                        var contentBuffer = Unpooled.Buffer(128);
+                        for (int i = 0; i < obj.ParameterTypes.Length; i++)
+                        {
+                            var p = obj.ParameterTypes[i];
+                            options.Tag = p.Position + 1;
+                            convertRoot.Serialize(obj.Parameters[i], p.ParameterType, contentBuffer, options);
+                        }
+
+                        options.Tag = 7;
+                        bufferConvert.Serialize(contentBuffer, buffer, options);
+                    }
+                    break;
             }
 
-            options.Tag = 7;
-            bufferConvert.Serialize(contentBuffer, buffer, options);
             options.Tag = 8;
             intConvert.Serialize(obj.Timeout, buffer, options);
             options.Tag = 9;
