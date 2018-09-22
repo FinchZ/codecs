@@ -18,7 +18,7 @@
     <PackageReference Include="AspectCore.Extensions.Reflection" Version="1.0.1" />
     <PackageReference Include="DotNetty.Buffers" Version="0.5.0" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
-    <PackageReference Include="Tars.Net.Abstractions" Version="0.0.1-beta-20180912131335" />
+    <PackageReference Include="Tars.Net.Abstractions" Version="0.0.1-beta-20180922105013" />
   </ItemGroup>
 
 </Project>

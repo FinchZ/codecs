@@ -1,7 +1,7 @@
 ﻿using DotNetty.Buffers;
-using Tars.Net.Metadata;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
 {
@@ -14,11 +14,12 @@ namespace Tars.Net.Codecs
         private readonly IDictionaryTarsConvert<string, string> dictConvert;
         private readonly ITarsConvert<IByteBuffer> bufferConvert;
         private readonly ITarsConvertRoot convertRoot;
+        private readonly IRpcMetadata rpcMetadata;
 
         public RequestTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
             IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
-            ITarsConvertRoot convertRoot)
+            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata)
         {
             this.shortConvert = shortConvert;
             this.intConvert = intConvert;
@@ -27,6 +28,7 @@ namespace Tars.Net.Codecs
             this.dictConvert = dictConvert;
             this.bufferConvert = bufferConvert;
             this.convertRoot = convertRoot;
+            this.rpcMetadata = rpcMetadata;
         }
 
         public override Request Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -62,6 +64,12 @@ namespace Tars.Net.Codecs
 
                     case 6:
                         req.FuncName = stringConvert.Deserialize(buffer, options);
+                        var (method, isOneway, outParameters, codec, version, serviceType) = rpcMetadata.FindRpcMethod(req.ServantName, req.FuncName);
+                        req.IsOneway = isOneway;
+                        req.Mehtod = method;
+                        req.ReturnParameterTypes = outParameters;
+                        req.ServiceType = serviceType;
+                        req.ParameterTypes = method.GetParameters();
                         break;
 
                     case 7 when options.Version == TarsCodecsVersion.V1:
@@ -150,12 +158,14 @@ namespace Tars.Net.Codecs
             {
                 case TarsCodecsVersion.V3:
                     {
-                        var uni = new UniAttributeV3(convertRoot);
-                        uni.Temp = new Dictionary<string, IByteBuffer>(obj.ParameterTypes.Length);
+                        var uni = new UniAttributeV3(convertRoot)
+                        {
+                            Temp = new Dictionary<string, IByteBuffer>(obj.ParameterTypes.Length)
+                        };
                         for (int i = 0; i < obj.ParameterTypes.Length; i++)
                         {
                             var p = obj.ParameterTypes[i];
-                            uni.Put(p.Name,  obj.Parameters[i], p.ParameterType, options);
+                            uni.Put(p.Name, obj.Parameters[i], p.ParameterType, options);
                         }
 
                         options.Tag = 7;
@@ -165,8 +175,10 @@ namespace Tars.Net.Codecs
 
                 case TarsCodecsVersion.V2:
                     {
-                        var uni = new UniAttributeV2(convertRoot);
-                        uni.Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>(obj.ParameterTypes.Length);
+                        var uni = new UniAttributeV2(convertRoot)
+                        {
+                            Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>(obj.ParameterTypes.Length)
+                        };
                         for (int i = 0; i < obj.ParameterTypes.Length; i++)
                         {
                             var p = obj.ParameterTypes[i];
