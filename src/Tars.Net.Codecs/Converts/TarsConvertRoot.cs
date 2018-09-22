@@ -11,8 +11,8 @@ namespace Tars.Net.Codecs
 {
     public class TarsConvertRoot : ITarsConvertRoot
     {
-        private readonly ConcurrentDictionary<(Codec, short), (MethodReflector serialize, MethodReflector deserialize, object instance)> dict
-            = new ConcurrentDictionary<(Codec, short), (MethodReflector serialize, MethodReflector deserialize, object instance)>();
+        private readonly ConcurrentDictionary<(Codec, short, Type), (MethodReflector serialize, MethodReflector deserialize, object instance)> dict
+            = new ConcurrentDictionary<(Codec, short, Type), (MethodReflector serialize, MethodReflector deserialize, object instance)>();
 
         private readonly IServiceProvider provider;
 
@@ -27,9 +27,9 @@ namespace Tars.Net.Codecs
 
         private (MethodReflector serialize, MethodReflector deserialize, object instance) GetConvert(Codec codec, Type type, TarsConvertOptions options)
         {
-            return dict.GetOrAdd((codec, options.Version), (op) =>
+            return dict.GetOrAdd((codec, options.Version, type), (op) =>
             {
-                Type convertType = GetConvertType(type);
+                Type convertType = GetConvertType(op.Item3);
 
                 var convert = provider.GetServices(convertType).FirstOrDefault(i => ((ICanTarsConvert)i).Accept(op.Item1, op.Item2));
                 if (convert == null)
