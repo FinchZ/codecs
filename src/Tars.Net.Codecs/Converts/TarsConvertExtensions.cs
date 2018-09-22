@@ -9,8 +9,11 @@ namespace Tars.Net.Codecs
     {
         public static IServiceCollection AddTarsCodecs(this IServiceCollection services)
         {
+            services.TryAddSingleton<IDecoder<IByteBuffer>, TarsDecoder>();
+            services.TryAddSingleton<IEncoder<IByteBuffer>, TarsEncoder>();
             services.TryAddSingleton<ITarsConvertRoot, TarsConvertRoot>();
             services.TryAddEnumerable<ITarsConvert<Request>, RequestTarsConvert>()
+                .TryAddEnumerable<ITarsConvert<Response>, ResponseTarsConvert>()
                 .TryAddEnumerable<ITarsConvert<byte>, ByteTarsConvert>()
                 .TryAddEnumerable<ITarsConvert<bool>, BoolTarsConvert>()
                 .TryAddEnumerable<ITarsConvert<short>, ShortTarsConvert>()

@@ -82,9 +82,8 @@ namespace Tars.Net.Codecs
                     case 7 when options.Version == TarsCodecsVersion.V2:
                         {
                             ReadHead(buffer, options);
-                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV2(convertRoot);
-                            uni.Deserialize(contentBuffer, options);
+                            uni.Deserialize(buffer, options);
                             req.Parameters = new object[req.ParameterTypes.Length];
                             foreach (var pt in req.ParameterTypes)
                             {
