@@ -116,6 +116,10 @@ namespace Tars.Net.Codecs
                                 ReadHead(buf, options);
                                 resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
                             }
+                            else if(resp.ReturnValueType.ParameterType.GetTypeInfo().IsTask())
+                            {
+                                resp.ReturnValue = Task.CompletedTask;
+                            }
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
                                 var pt = resp.ReturnParameterTypes[i];
@@ -261,7 +265,8 @@ namespace Tars.Net.Codecs
                 {
                     Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>()
                 };
-                if (obj.ReturnValue != null)
+                var type = obj.ReturnValueType.ParameterType;
+                if (obj.ReturnValue != null && type != typeof(void) && type != typeof(Task))
                 {
                     uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
                 }
@@ -283,7 +288,8 @@ namespace Tars.Net.Codecs
                 {
                     Temp = new Dictionary<string, IByteBuffer>()
                 };
-                if (obj.ReturnValue != null)
+                var type = obj.ReturnValueType.ParameterType;
+                if (obj.ReturnValue != null && type != typeof(void) && type != typeof(Task))
                 {
                     uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
                 }

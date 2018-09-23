@@ -31,6 +31,8 @@ namespace Tars.Net.Codecs
                 .TryAddEnumerable<ITarsConvert<double?>, NullableTarsConvert<double>>()
                 .TryAddEnumerable<ITarsConvert<IByteBuffer>, ByteBufferTarsConvert>();
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IListTarsConvert<>), typeof(ListTarsConvert<>), ServiceLifetime.Singleton));
+            services.TryAddEnumerable(new ServiceDescriptor(typeof(ITaskTarsConvert<>), typeof(TaskTarsConvert<>), ServiceLifetime.Singleton));
+            services.TryAddEnumerable(new ServiceDescriptor(typeof(IValueTaskTarsConvert<>), typeof(ValueTaskTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IStructTarsConvert<>), typeof(StructTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IDictionaryTarsConvert<,>), typeof(DictionaryTarsConvert<,>), ServiceLifetime.Singleton));
             return services;

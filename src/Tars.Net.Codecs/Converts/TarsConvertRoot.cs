@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Tars.Net.Codecs.Attributes;
+using System.Reflection;
 
 namespace Tars.Net.Codecs
 {
@@ -34,7 +35,7 @@ namespace Tars.Net.Codecs
                 var convert = provider.GetServices(convertType).FirstOrDefault(i => ((ICanTarsConvert)i).Accept(op.Item1, op.Item2));
                 if (convert == null)
                 {
-                    throw new NotSupportedException($"Codecs not supported {options}.");
+                    throw new NotSupportedException($"Codecs not supported type:{type}, options:{options}.");
                 }
                 convertType = convert.GetType();
                 return (convertType.GetMethod("Serialize").GetReflector(), convertType.GetMethod("Deserialize").GetReflector(), convert);
@@ -43,7 +44,16 @@ namespace Tars.Net.Codecs
 
         private static Type GetConvertType(Type type)
         {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
+            var tInfo = type.GetTypeInfo();
+            if (tInfo.IsTaskWithResult())
+            {
+                return typeof(ITaskTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+            }
+            else if (tInfo.IsValueTask())
+            {
+                return typeof(IValueTaskTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+            }
+            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
             {
                 return typeof(IListTarsConvert<>).MakeGenericType(type.GetGenericArguments());
             }
