@@ -36,7 +36,7 @@ namespace Tars.Net.Codecs
                 {
                     throw new NotSupportedException($"Codecs not supported {options}.");
                 }
-
+                convertType = convert.GetType();
                 return (convertType.GetMethod("Serialize").GetReflector(), convertType.GetMethod("Deserialize").GetReflector(), convert);
             });
         }
@@ -54,6 +54,10 @@ namespace Tars.Net.Codecs
             else if (type.IsClass && !type.IsAbstract && type.GetReflector().IsDefined<TarsStructAttribute>())
             {
                 return typeof(IStructTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+            }
+            else if(type.IsByRef)
+            {
+                return typeof(ITarsConvert<>).MakeGenericType(type.GetElementType());
             }
             else
             {

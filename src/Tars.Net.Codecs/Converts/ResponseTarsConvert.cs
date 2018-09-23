@@ -18,11 +18,12 @@ namespace Tars.Net.Codecs
         private readonly IDictionaryTarsConvert<string, string> dictConvert;
         private readonly ITarsConvert<IByteBuffer> bufferConvert;
         private readonly ITarsConvertRoot convertRoot;
+        private readonly IRpcMetadata rpcMetadata;
 
         public ResponseTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
             IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
-            ITarsConvertRoot convertRoot)
+            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata)
         {
             this.shortConvert = shortConvert;
             this.intConvert = intConvert;
@@ -31,17 +32,13 @@ namespace Tars.Net.Codecs
             this.dictConvert = dictConvert;
             this.bufferConvert = bufferConvert;
             this.convertRoot = convertRoot;
-        }
-
-        public override bool Accept(Codec codec, short version)
-        {
-            return codec == Codec.Tars && version == TarsCodecsVersion.V1;
+            this.rpcMetadata = rpcMetadata;
         }
 
         public override Response Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var resp = new Response();
-            options.Tag = 1;
+            ReadHead(buffer, options);
             options.Version = resp.Version = shortConvert.Deserialize(buffer, options);
             switch (options.Version)
             {
@@ -65,7 +62,7 @@ namespace Tars.Net.Codecs
                 switch (options.Tag)
                 {
                     case 2:
-                        int packetType = byteConvert.Deserialize(buffer, options);
+                        resp.PacketType = byteConvert.Deserialize(buffer, options);
                         break;
 
                     case 3:
@@ -82,32 +79,49 @@ namespace Tars.Net.Codecs
 
                     case 6:
                         resp.FuncName = stringConvert.Deserialize(buffer, options);
+                        var (method, isOneway, outParameters, codec, version, serviceType) = rpcMetadata.FindRpcMethod(resp.ServantName, resp.FuncName);
+                        resp.ReturnValueType = method.ReturnParameter;
+                        resp.ReturnParameterTypes = outParameters;
+                        resp.ReturnParameters = new object[outParameters.Length];
                         break;
 
                     case 7 when options.Version == TarsCodecsVersion.V2:
                         {
-                            ReadHead(buffer, options);
+                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV2(convertRoot);
-                            uni.Deserialize(buffer, options);
-                            resp.ReturnValue = convertRoot.Deserialize(uni.Temp[string.Empty].Values.First(), resp.ReturnValueType.ParameterType, options);
+                            ReadHead(contentBuffer, options);
+                            uni.Deserialize(contentBuffer, options);
+                            var buf = uni.Temp[string.Empty].Values.First();
+                            ReadHead(buf, options);
+                            resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
                                 var pt = resp.ReturnParameterTypes[i];
-                                resp.ReturnParameters[i] = convertRoot.Deserialize(uni.Temp[pt.Name].Values.First(), pt.ParameterType, options);
+                                buf = uni.Temp[pt.Name].Values.First();
+                                ReadHead(buf, options);
+                                resp.ReturnParameters[i] = convertRoot.Deserialize(buf, pt.ParameterType, options);
                             }
                         }
                         break;
 
                     case 7 when options.Version == TarsCodecsVersion.V3:
                         {
-                            ReadHead(buffer, options);
+                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV3(convertRoot);
-                            uni.Deserialize(buffer, options);
-                            resp.ReturnValue = convertRoot.Deserialize(uni.Temp[string.Empty], resp.ReturnValueType.ParameterType, options);
+                            ReadHead(contentBuffer, options);
+                            uni.Deserialize(contentBuffer, options);
+                            if (uni.Temp.ContainsKey(string.Empty))
+                            {
+                                var buf = uni.Temp[string.Empty];
+                                ReadHead(buf, options);
+                                resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
+                            }
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
                                 var pt = resp.ReturnParameterTypes[i];
-                                resp.ReturnParameters[i] = convertRoot.Deserialize(uni.Temp[pt.Name], pt.ParameterType, options);
+                                var buf = uni.Temp[pt.Name];
+                                ReadHead(buf, options);
+                                resp.ReturnParameters[i] = convertRoot.Deserialize(buf, pt.ParameterType, options);
                             }
                         }
                         break;
@@ -135,7 +149,7 @@ namespace Tars.Net.Codecs
                 switch (options.Tag)
                 {
                     case 2:
-                        int packetType = byteConvert.Deserialize(buffer, options);
+                        resp.PacketType = byteConvert.Deserialize(buffer, options);
                         break;
 
                     case 3:
@@ -247,12 +261,21 @@ namespace Tars.Net.Codecs
                 {
                     Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>()
                 };
-                uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
-                for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
+                if (obj.ReturnValue != null)
                 {
-                    var pt = obj.ReturnParameterTypes[i];
-                    uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
+                    uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
                 }
+
+                if (obj.ReturnParameterTypes != null)
+                {
+                    for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
+                    {
+                        var pt = obj.ReturnParameterTypes[i];
+                        uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
+                    }
+                }
+                options.Tag = 7;
+                uni.Serialize(buffer, options);
             }
             else
             {
@@ -260,12 +283,20 @@ namespace Tars.Net.Codecs
                 {
                     Temp = new Dictionary<string, IByteBuffer>()
                 };
-                uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
-                for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
+                if (obj.ReturnValue != null)
                 {
-                    var pt = obj.ReturnParameterTypes[i];
-                    uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
+                    uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
                 }
+                if (obj.ReturnParameterTypes != null)
+                {
+                    for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
+                    {
+                        var pt = obj.ReturnParameterTypes[i];
+                        uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
+                    }
+                }
+                options.Tag = 7;
+                uni.Serialize(buffer, options);
             }
             options.Tag = 8;
             intConvert.Serialize(obj.Timeout, buffer, options);

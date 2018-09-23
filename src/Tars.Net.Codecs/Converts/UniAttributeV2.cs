@@ -17,8 +17,7 @@ namespace Tars.Net.Codecs
 
         public void Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            var buf = convert.Deserialize<IByteBuffer>(buffer, options);
-            Temp = convert.Deserialize<IDictionary<string, IDictionary<string, IByteBuffer>>>(buf, options);
+            Temp = convert.Deserialize<IDictionary<string, IDictionary<string, IByteBuffer>>>(buffer, options);
         }
 
         public void Serialize(IByteBuffer buffer, TarsConvertOptions options)

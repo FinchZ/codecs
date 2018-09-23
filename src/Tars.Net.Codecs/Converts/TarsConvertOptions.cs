@@ -15,5 +15,10 @@ namespace Tars.Net.Codecs
         public int Tag { get; set; } = 1;
 
         public byte TarsType { get; set; }
+
+        public override string ToString()
+        {
+            return $"Codec:{Codec},Version:{Version},Tag:{Tag},Encoding:{Encoding}";
+        }
     }
 }

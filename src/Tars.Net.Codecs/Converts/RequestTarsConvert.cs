@@ -74,7 +74,6 @@ namespace Tars.Net.Codecs
 
                     case 7 when options.Version == TarsCodecsVersion.V1:
                         {
-                            ReadHead(buffer, options);
                             var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             req.Parameters = new object[req.ParameterTypes.Length];
                             while (contentBuffer.IsReadable())
@@ -89,9 +88,10 @@ namespace Tars.Net.Codecs
 
                     case 7 when options.Version == TarsCodecsVersion.V2:
                         {
-                            ReadHead(buffer, options);
+                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV2(convertRoot);
-                            uni.Deserialize(buffer, options);
+                            ReadHead(contentBuffer, options);
+                            uni.Deserialize(contentBuffer, options);
                             req.Parameters = new object[req.ParameterTypes.Length];
                             foreach (var pt in req.ParameterTypes)
                             {
@@ -104,9 +104,9 @@ namespace Tars.Net.Codecs
 
                     case 7 when options.Version == TarsCodecsVersion.V3:
                         {
-                            ReadHead(buffer, options);
                             var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV3(convertRoot);
+                            ReadHead(contentBuffer, options);
                             uni.Deserialize(contentBuffer, options);
                             req.Parameters = new object[req.ParameterTypes.Length];
                             foreach (var pt in req.ParameterTypes)
@@ -142,6 +142,8 @@ namespace Tars.Net.Codecs
         {
             options.Tag = 1;
             options.Version = obj.Version;
+            // for test
+            obj.Version = options.Version = 0x03;
             shortConvert.Serialize(obj.Version, buffer, options);
             options.Tag = 2;
             byteConvert.Serialize(obj.PacketType, buffer, options);
