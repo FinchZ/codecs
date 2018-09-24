@@ -42,8 +42,10 @@ namespace Tars.Net.Codecs
             });
         }
 
-        private static Type GetConvertType(Type type)
+        private static Type GetConvertType(Type convertType)
         {
+            var type = convertType.IsByRef ? convertType.GetElementType() : convertType;
+
             var tInfo = type.GetTypeInfo();
             if (tInfo.IsTaskWithResult())
             {
@@ -64,10 +66,6 @@ namespace Tars.Net.Codecs
             else if (type.IsClass && !type.IsAbstract && type.GetReflector().IsDefined<TarsStructAttribute>())
             {
                 return typeof(IStructTarsConvert<>).MakeGenericType(type.GetGenericArguments());
-            }
-            else if(type.IsByRef)
-            {
-                return typeof(ITarsConvert<>).MakeGenericType(type.GetElementType());
             }
             else
             {
