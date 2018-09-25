@@ -9,10 +9,12 @@ namespace Tars.Net.Codecs
     public class ListTarsConvert<T> : TarsConvertBase<IList<T>>, IListTarsConvert<T>
     {
         private readonly ITarsConvert<T> convert;
+        private readonly ITarsHeadHandler headHandler;
 
-        public ListTarsConvert(ITarsConvert<T> convert)
+        public ListTarsConvert(ITarsConvert<T> convert, ITarsHeadHandler headHandler)
         {
             this.convert = convert;
+            this.headHandler = headHandler;
         }
 
         public override IList<T> Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -30,7 +32,7 @@ namespace Tars.Net.Codecs
                         var list = new List<T>(size);
                         for (int i = 0; i < size; ++i)
                         {
-                            ReadHead(buffer, options);
+                            headHandler.ReadHead(buffer, options);
                             var t = convert.Deserialize(buffer, options);
                             list.Add(t);
                         }
@@ -43,8 +45,8 @@ namespace Tars.Net.Codecs
 
         public override void Serialize(IList<T> obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            Reserve(buffer, 8);
-            WriteHead(buffer, TarsStructType.LIST, options.Tag);
+            headHandler.Reserve(buffer, 8);
+            headHandler.WriteHead(buffer, TarsStructType.LIST, options.Tag);
             if (obj == null)
             {
                 buffer.WriteInt(0);

@@ -3,7 +3,11 @@ using System;
 
 namespace Tars.Net.Codecs
 {
-    public class EnumTarsConvert<T> : TarsConvertBase<T> where T : struct, IConvertible, IComparable, IFormattable
+    public interface IEnumTarsConvert<T> : ITarsConvert<T> where T : struct, IConvertible, IComparable, IFormattable
+    {
+    }
+
+    public class EnumTarsConvert<T> : TarsConvertBase<T>, IEnumTarsConvert<T> where T : struct, IConvertible, IComparable, IFormattable
     {
         private readonly Type realType;
         private readonly ITarsConvertRoot convertRoot;
@@ -12,6 +16,11 @@ namespace Tars.Net.Codecs
         {
             realType = Enum.GetUnderlyingType(typeof(T));
             this.convertRoot = convertRoot;
+        }
+
+        public override bool Accept(Codec codec, short version, Type type)
+        {
+            return type.IsEnum && base.Accept(codec, version, type);
         }
 
         public override T Deserialize(IByteBuffer buffer, TarsConvertOptions options)

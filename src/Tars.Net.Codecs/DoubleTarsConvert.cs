@@ -5,10 +5,12 @@ namespace Tars.Net.Codecs
     public class DoubleTarsConvert : TarsConvertBase<double>
     {
         private readonly ITarsConvert<float> convert;
+        private readonly ITarsHeadHandler headHandler;
 
-        public DoubleTarsConvert(ITarsConvert<float> convert)
+        public DoubleTarsConvert(ITarsConvert<float> convert, ITarsHeadHandler headHandler)
         {
             this.convert = convert;
+            this.headHandler = headHandler;
         }
 
         public override double Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -31,8 +33,8 @@ namespace Tars.Net.Codecs
             }
             else
             {
-                Reserve(buffer, 10);
-                WriteHead(buffer, TarsStructType.DOUBLE, options.Tag);
+                headHandler.Reserve(buffer, 10);
+                headHandler.WriteHead(buffer, TarsStructType.DOUBLE, options.Tag);
                 buffer.WriteDouble(obj);
             }
         }

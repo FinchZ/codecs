@@ -15,11 +15,12 @@ namespace Tars.Net.Codecs
         private readonly ITarsConvert<IByteBuffer> bufferConvert;
         private readonly ITarsConvertRoot convertRoot;
         private readonly IRpcMetadata rpcMetadata;
+        private readonly ITarsHeadHandler headHandler;
 
         public RequestTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
             IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
-            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata)
+            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata, ITarsHeadHandler headHandler)
         {
             this.shortConvert = shortConvert;
             this.intConvert = intConvert;
@@ -29,6 +30,7 @@ namespace Tars.Net.Codecs
             this.bufferConvert = bufferConvert;
             this.convertRoot = convertRoot;
             this.rpcMetadata = rpcMetadata;
+            this.headHandler = headHandler;
         }
 
         public override Request Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -37,7 +39,7 @@ namespace Tars.Net.Codecs
             var tag = options.Tag = 1;
             while (tag != 0 && buffer.IsReadable())
             {
-                ReadHead(buffer, options);
+                headHandler.ReadHead(buffer, options);
                 tag = options.Tag;
                 switch (tag)
                 {
@@ -78,7 +80,7 @@ namespace Tars.Net.Codecs
                             req.Parameters = new object[req.ParameterTypes.Length];
                             while (contentBuffer.IsReadable())
                             {
-                                ReadHead(contentBuffer, options);
+                                headHandler.ReadHead(contentBuffer, options);
                                 var index = options.Tag - 1;
                                 var type = req.ParameterTypes[index];
                                 req.Parameters[index] = convertRoot.Deserialize(contentBuffer, type.ParameterType, options);
@@ -90,13 +92,13 @@ namespace Tars.Net.Codecs
                         {
                             var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV2(convertRoot);
-                            ReadHead(contentBuffer, options);
+                            headHandler.ReadHead(contentBuffer, options);
                             uni.Deserialize(contentBuffer, options);
                             req.Parameters = new object[req.ParameterTypes.Length];
                             foreach (var pt in req.ParameterTypes)
                             {
                                 var pBuffer = uni.Temp[pt.Name].Values.First();
-                                ReadHead(pBuffer, options);
+                                headHandler.ReadHead(pBuffer, options);
                                 req.Parameters[pt.Position] = convertRoot.Deserialize(pBuffer, pt.ParameterType, options);
                             }
                         }
@@ -106,13 +108,13 @@ namespace Tars.Net.Codecs
                         {
                             var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV3(convertRoot);
-                            ReadHead(contentBuffer, options);
+                            headHandler.ReadHead(contentBuffer, options);
                             uni.Deserialize(contentBuffer, options);
                             req.Parameters = new object[req.ParameterTypes.Length];
                             foreach (var pt in req.ParameterTypes)
                             {
                                 var pBuffer = uni.Temp[pt.Name];
-                                ReadHead(pBuffer, options);
+                                headHandler.ReadHead(pBuffer, options);
                                 req.Parameters[pt.Position] = convertRoot.Deserialize(pBuffer, pt.ParameterType, options);
                             }
                         }

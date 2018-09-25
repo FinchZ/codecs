@@ -4,6 +4,13 @@ namespace Tars.Net.Codecs
 {
     public class FloatTarsConvert : TarsConvertBase<float>
     {
+        private readonly ITarsHeadHandler headHandler;
+
+        public FloatTarsConvert(ITarsHeadHandler headHandler)
+        {
+            this.headHandler = headHandler;
+        }
+
         public override float Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             switch (options.TarsType)
@@ -21,14 +28,14 @@ namespace Tars.Net.Codecs
 
         public override void Serialize(float obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            Reserve(buffer, 6);
+            headHandler.Reserve(buffer, 6);
             if (obj == 0)
             {
-                WriteHead(buffer, TarsStructType.ZERO_TAG, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.ZERO_TAG, options.Tag);
             }
             else
             {
-                WriteHead(buffer, TarsStructType.FLOAT, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.FLOAT, options.Tag);
                 if (options.HasValue)
                 {
                     buffer.WriteFloat(obj);

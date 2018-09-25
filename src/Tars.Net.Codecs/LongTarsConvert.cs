@@ -5,10 +5,12 @@ namespace Tars.Net.Codecs
     public class LongTarsConvert : TarsConvertBase<long>
     {
         private readonly ITarsConvert<int> convert;
+        private readonly ITarsHeadHandler headHandler;
 
-        public LongTarsConvert(ITarsConvert<int> convert)
+        public LongTarsConvert(ITarsConvert<int> convert, ITarsHeadHandler headHandler)
         {
             this.convert = convert;
+            this.headHandler = headHandler;
         }
 
         public override long Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -31,8 +33,8 @@ namespace Tars.Net.Codecs
             }
             else
             {
-                Reserve(buffer, 10);
-                WriteHead(buffer, TarsStructType.LONG, options.Tag);
+                headHandler.Reserve(buffer, 10);
+                headHandler.WriteHead(buffer, TarsStructType.LONG, options.Tag);
                 if (options.HasValue)
                 {
                     buffer.WriteLong(obj);

@@ -13,11 +13,13 @@ namespace Tars.Net.Codecs
     public class StructTarsConvert<T> : TarsConvertBase<T>, IStructTarsConvert<T> where T : class, new()
     {
         private readonly ITarsConvertRoot convert;
+        private readonly ITarsHeadHandler headHandler;
         private readonly SortedDictionary<int, PropertyReflector> properties = new SortedDictionary<int, PropertyReflector>();
 
-        public StructTarsConvert(ITarsConvertRoot convert)
+        public StructTarsConvert(ITarsConvertRoot convert, ITarsHeadHandler headHandler)
         {
             this.convert = convert;
+            this.headHandler = headHandler;
             var ps = typeof(T).GetProperties()
                 .Where(i => i.CanRead
                     && i.CanWrite
@@ -34,7 +36,7 @@ namespace Tars.Net.Codecs
         {
             if (options.TarsType == TarsStructType.STRUCT_BEGIN)
             {
-                ReadHead(buffer, options);
+                headHandler.ReadHead(buffer, options);
             }
 
             if (options.TarsType == TarsStructType.STRUCT_END)
@@ -47,15 +49,15 @@ namespace Tars.Net.Codecs
             {
                 var p = properties[options.Tag];
                 p.SetValue(result, convert.Deserialize(buffer, p.GetMemberInfo().PropertyType, options));
-                ReadHead(buffer, options);
+                headHandler.ReadHead(buffer, options);
             }
             return result;
         }
 
         public override void Serialize(T obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            Reserve(buffer, 2);
-            WriteHead(buffer, TarsStructType.STRUCT_BEGIN, options.Tag);
+            headHandler.Reserve(buffer, 2);
+            headHandler.WriteHead(buffer, TarsStructType.STRUCT_BEGIN, options.Tag);
             if (obj != null)
             {
                 foreach (var kv in properties)
@@ -64,8 +66,8 @@ namespace Tars.Net.Codecs
                     convert.Serialize(kv.Value.GetValue(obj), buffer, options);
                 }
             }
-            Reserve(buffer, 2);
-            WriteHead(buffer, TarsStructType.STRUCT_END, options.Tag);
+            headHandler.Reserve(buffer, 2);
+            headHandler.WriteHead(buffer, TarsStructType.STRUCT_END, options.Tag);
         }
     }
 }

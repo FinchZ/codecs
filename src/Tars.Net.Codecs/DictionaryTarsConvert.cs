@@ -10,11 +10,13 @@ namespace Tars.Net.Codecs
     {
         private readonly ITarsConvert<K> kConvert;
         private readonly ITarsConvert<V> vConvert;
+        private readonly ITarsHeadHandler headHandler;
 
-        public DictionaryTarsConvert(ITarsConvert<K> kConvert, ITarsConvert<V> vConvert)
+        public DictionaryTarsConvert(ITarsConvert<K> kConvert, ITarsConvert<V> vConvert, ITarsHeadHandler headHandler)
         {
             this.kConvert = kConvert;
             this.vConvert = vConvert;
+            this.headHandler = headHandler;
         }
 
         public override IDictionary<K, V> Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -32,9 +34,9 @@ namespace Tars.Net.Codecs
                         var dict = new Dictionary<K, V>(size);
                         for (int i = 0; i < size; ++i)
                         {
-                            ReadHead(buffer, options);
+                            headHandler.ReadHead(buffer, options);
                             var k = kConvert.Deserialize(buffer, options);
-                            ReadHead(buffer, options);
+                            headHandler.ReadHead(buffer, options);
                             var v = vConvert.Deserialize(buffer, options);
                             if (dict.ContainsKey(k))
                             {
@@ -54,8 +56,8 @@ namespace Tars.Net.Codecs
 
         public override void Serialize(IDictionary<K, V> obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            Reserve(buffer, 8);
-            WriteHead(buffer, TarsStructType.MAP, options.Tag);
+            headHandler.Reserve(buffer, 8);
+            headHandler.WriteHead(buffer, TarsStructType.MAP, options.Tag);
             if (obj == null)
             {
                 buffer.WriteInt(0);

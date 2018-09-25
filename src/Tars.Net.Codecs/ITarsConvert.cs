@@ -1,10 +1,11 @@
 ﻿using DotNetty.Buffers;
+using System;
 
 namespace Tars.Net.Codecs
 {
     public interface ICanTarsConvert
     {
-        bool Accept(Codec codec, short version);
+        bool Accept(Codec codec, short version, Type type);
     }
 
     public interface ITarsConvert<T> : ICanTarsConvert

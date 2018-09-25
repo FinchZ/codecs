@@ -19,11 +19,12 @@ namespace Tars.Net.Codecs
         private readonly ITarsConvert<IByteBuffer> bufferConvert;
         private readonly ITarsConvertRoot convertRoot;
         private readonly IRpcMetadata rpcMetadata;
+        private readonly ITarsHeadHandler headHandler;
 
         public ResponseTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
             IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
-            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata)
+            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata, ITarsHeadHandler headHandler)
         {
             this.shortConvert = shortConvert;
             this.intConvert = intConvert;
@@ -33,12 +34,13 @@ namespace Tars.Net.Codecs
             this.bufferConvert = bufferConvert;
             this.convertRoot = convertRoot;
             this.rpcMetadata = rpcMetadata;
+            this.headHandler = headHandler;
         }
 
         public override Response Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
             var resp = new Response();
-            ReadHead(buffer, options);
+            headHandler.ReadHead(buffer, options);
             options.Version = resp.Version = shortConvert.Deserialize(buffer, options);
             switch (options.Version)
             {
@@ -58,7 +60,7 @@ namespace Tars.Net.Codecs
         {
             while (buffer.IsReadable())
             {
-                ReadHead(buffer, options);
+                headHandler.ReadHead(buffer, options);
                 switch (options.Tag)
                 {
                     case 2:
@@ -89,16 +91,16 @@ namespace Tars.Net.Codecs
                         {
                             var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV2(convertRoot);
-                            ReadHead(contentBuffer, options);
+                            headHandler.ReadHead(contentBuffer, options);
                             uni.Deserialize(contentBuffer, options);
                             var buf = uni.Temp[string.Empty].Values.First();
-                            ReadHead(buf, options);
+                            headHandler.ReadHead(buf, options);
                             resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
                                 var pt = resp.ReturnParameterTypes[i];
                                 buf = uni.Temp[pt.Name].Values.First();
-                                ReadHead(buf, options);
+                                headHandler.ReadHead(buf, options);
                                 resp.ReturnParameters[i] = convertRoot.Deserialize(buf, pt.ParameterType, options);
                             }
                         }
@@ -108,12 +110,12 @@ namespace Tars.Net.Codecs
                         {
                             var contentBuffer = bufferConvert.Deserialize(buffer, options);
                             var uni = new UniAttributeV3(convertRoot);
-                            ReadHead(contentBuffer, options);
+                            headHandler.ReadHead(contentBuffer, options);
                             uni.Deserialize(contentBuffer, options);
                             if (uni.Temp.ContainsKey(string.Empty))
                             {
                                 var buf = uni.Temp[string.Empty];
-                                ReadHead(buf, options);
+                                headHandler.ReadHead(buf, options);
                                 resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
                             }
                             else if(resp.ReturnValueType.ParameterType.GetTypeInfo().IsTask())
@@ -124,7 +126,7 @@ namespace Tars.Net.Codecs
                             {
                                 var pt = resp.ReturnParameterTypes[i];
                                 var buf = uni.Temp[pt.Name];
-                                ReadHead(buf, options);
+                                headHandler.ReadHead(buf, options);
                                 resp.ReturnParameters[i] = convertRoot.Deserialize(buf, pt.ParameterType, options);
                             }
                         }
@@ -149,7 +151,7 @@ namespace Tars.Net.Codecs
         {
             while (buffer.IsReadable())
             {
-                ReadHead(buffer, options);
+                headHandler.ReadHead(buffer, options);
                 switch (options.Tag)
                 {
                     case 2:
@@ -181,7 +183,7 @@ namespace Tars.Net.Codecs
                                 }
                                 else
                                 {
-                                    ReadHead(contentBuffer, options);
+                                    headHandler.ReadHead(contentBuffer, options);
                                     if (returnType.BaseType == typeof(Task))
                                     {
                                         var resultType = returnType.GenericTypeArguments[0];

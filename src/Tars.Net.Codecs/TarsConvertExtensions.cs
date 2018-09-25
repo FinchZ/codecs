@@ -9,6 +9,7 @@ namespace Tars.Net.Codecs
     {
         public static IServiceCollection AddTarsCodecs(this IServiceCollection services)
         {
+            services.TryAddSingleton<ITarsHeadHandler, TarsHeadHandler>();
             services.TryAddSingleton<IDecoder<IByteBuffer>, TarsDecoder>();
             services.TryAddSingleton<IEncoder<IByteBuffer>, TarsEncoder>();
             services.TryAddSingleton<ITarsConvertRoot, TarsConvertRoot>();
@@ -35,7 +36,7 @@ namespace Tars.Net.Codecs
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IValueTaskTarsConvert<>), typeof(ValueTaskTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IStructTarsConvert<>), typeof(StructTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IDictionaryTarsConvert<,>), typeof(DictionaryTarsConvert<,>), ServiceLifetime.Singleton));
-            services.TryAddEnumerable(new ServiceDescriptor(typeof(ITarsConvert<>), typeof(EnumTarsConvert<>), ServiceLifetime.Singleton));
+            services.TryAddEnumerable(new ServiceDescriptor(typeof(IEnumTarsConvert<>), typeof(EnumTarsConvert<>), ServiceLifetime.Singleton));
             return services;
         }
 

@@ -32,7 +32,7 @@ namespace Tars.Net.Codecs
             {
                 Type convertType = GetConvertType(op.Item3);
 
-                var convert = provider.GetServices(convertType).FirstOrDefault(i => ((ICanTarsConvert)i).Accept(op.Item1, op.Item2));
+                var convert = provider.GetServices(convertType).FirstOrDefault(i => ((ICanTarsConvert)i).Accept(op.Item1, op.Item2, op.Item3));
                 if (convert == null)
                 {
                     throw new NotSupportedException($"Codecs not supported type:{type}, options:{options}.");
@@ -54,6 +54,10 @@ namespace Tars.Net.Codecs
             else if (tInfo.IsValueTask())
             {
                 return typeof(IValueTaskTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+            }
+            else if (tInfo.IsEnum)
+            {
+                return typeof(IEnumTarsConvert<>).MakeGenericType(type);
             }
             else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
             {
