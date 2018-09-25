@@ -6,7 +6,7 @@ namespace Tars.Net.Codecs
     {
         public Encoding Encoding { get; set; } = Encoding.UTF8;
 
-        public short Version { get; set; } = TarsCodecsConstant.VERSION3;
+        public short Version { get; set; } = TarsCodecsVersion.V3;
 
         public Codec Codec { get; set; } = Codec.Tars;
 

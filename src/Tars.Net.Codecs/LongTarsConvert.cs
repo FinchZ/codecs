@@ -15,7 +15,7 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructBase.LONG:
+                case TarsStructType.LONG:
                     return buffer.ReadLong();
 
                 default:
@@ -32,7 +32,7 @@ namespace Tars.Net.Codecs
             else
             {
                 Reserve(buffer, 10);
-                WriteHead(buffer, TarsStructBase.LONG, options.Tag);
+                WriteHead(buffer, TarsStructType.LONG, options.Tag);
                 if (options.HasValue)
                 {
                     buffer.WriteLong(obj);

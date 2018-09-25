@@ -8,10 +8,10 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructBase.ZERO_TAG:
+                case TarsStructType.ZERO_TAG:
                     return 0x0;
 
-                case TarsStructBase.BYTE:
+                case TarsStructType.BYTE:
                     return buffer.ReadByte();
 
                 default:
@@ -24,11 +24,11 @@ namespace Tars.Net.Codecs
             Reserve(buffer, 3);
             if (obj == 0)
             {
-                WriteHead(buffer, TarsStructBase.ZERO_TAG, options.Tag);
+                WriteHead(buffer, TarsStructType.ZERO_TAG, options.Tag);
             }
             else
             {
-                WriteHead(buffer, TarsStructBase.BYTE, options.Tag);
+                WriteHead(buffer, TarsStructType.BYTE, options.Tag);
                 if (options.HasValue)
                 {
                     buffer.WriteByte(obj);

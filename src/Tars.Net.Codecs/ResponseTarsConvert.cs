@@ -235,7 +235,7 @@ namespace Tars.Net.Codecs
             options.Tag = 1;
             shortConvert.Serialize(obj.Version, buffer, options);
             options.Tag = 2;
-            byteConvert.Serialize(TarsCodecsConstant.NORMAL, buffer, options);
+            byteConvert.Serialize(TarsPacketType.NORMAL, buffer, options);
             switch (options.Version)
             {
                 case TarsCodecsVersion.V2:

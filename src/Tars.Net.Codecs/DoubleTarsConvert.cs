@@ -15,7 +15,7 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructBase.DOUBLE:
+                case TarsStructType.DOUBLE:
                     return buffer.ReadDouble();
 
                 default:
@@ -32,7 +32,7 @@ namespace Tars.Net.Codecs
             else
             {
                 Reserve(buffer, 10);
-                WriteHead(buffer, TarsStructBase.DOUBLE, options.Tag);
+                WriteHead(buffer, TarsStructType.DOUBLE, options.Tag);
                 buffer.WriteDouble(obj);
             }
         }

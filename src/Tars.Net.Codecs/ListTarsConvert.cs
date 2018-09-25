@@ -19,7 +19,7 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructBase.LIST:
+                case TarsStructType.LIST:
                     {
                         int size = buffer.ReadInt();
                         if (size < 0)
@@ -44,7 +44,7 @@ namespace Tars.Net.Codecs
         public override void Serialize(IList<T> obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             Reserve(buffer, 8);
-            WriteHead(buffer, TarsStructBase.LIST, options.Tag);
+            WriteHead(buffer, TarsStructType.LIST, options.Tag);
             if (obj == null)
             {
                 buffer.WriteInt(0);
