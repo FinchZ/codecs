@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Tars.Net.Codecs
 {
@@ -9,7 +7,6 @@ namespace Tars.Net.Codecs
         public TarsDecodeException(string message)
             : base(message)
         {
-
         }
     }
 }

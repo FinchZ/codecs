@@ -28,7 +28,11 @@ namespace Tars.Net.Codecs
 
         public override void Serialize(byte obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            if (!options.HasValue) return;
+            if (!options.HasValue)
+            {
+                return;
+            }
+
             headHandler.Reserve(buffer, 3);
             if (obj == 0)
             {

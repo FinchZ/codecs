@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Tars.Net.Codecs
 {
-    public class UniAttributeV3 
+    public class UniAttributeV3
     {
         private readonly ITarsConvertRoot convert;
         public IDictionary<string, IByteBuffer> Temp { get; set; }

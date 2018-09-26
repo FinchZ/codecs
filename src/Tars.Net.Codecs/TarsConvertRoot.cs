@@ -5,8 +5,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using Tars.Net.Codecs.Attributes;
 using System.Reflection;
+using Tars.Net.Codecs.Attributes;
 
 namespace Tars.Net.Codecs
 {

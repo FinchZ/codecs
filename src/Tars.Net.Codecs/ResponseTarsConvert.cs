@@ -118,7 +118,7 @@ namespace Tars.Net.Codecs
                                 headHandler.ReadHead(buf, options);
                                 resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
                             }
-                            else if(resp.ReturnValueType.ParameterType.GetTypeInfo().IsTask())
+                            else if (resp.ReturnValueType.ParameterType.GetTypeInfo().IsTask())
                             {
                                 resp.ReturnValue = Task.CompletedTask;
                             }
