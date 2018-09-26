@@ -149,5 +149,61 @@ namespace Tars.Net.Test
             var ex = Assert.Throws<TarsDecodeException>(() => sut.Deserialize<byte>(buffer, options));
             Assert.Equal(error, ex.Message);
         }
+
+        [Theory]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars, 11)]
+        [InlineData(TarsCodecsVersion.V2, Codec.Tars, 133)]
+        [InlineData(TarsCodecsVersion.V3, Codec.Tars, 255)]
+        public void WhenNullShouldBeEmpty(short version, Codec codec, int tag)
+        {
+            var buffer = Unpooled.Buffer(1);
+            var options = new TarsConvertOptions()
+            {
+                Codec = codec,
+                Version = version,
+                Tag = tag,
+            };
+            byte? nullable = null;
+            sut.Serialize(nullable, buffer, options);
+            Assert.True(options.HasValue);
+            Assert.Equal(0, buffer.ReadableBytes);
+        }
+
+        [Theory]
+        [InlineData((byte)1, TarsCodecsVersion.V1, Codec.Tars, 11, 2)]
+        [InlineData((byte)1, TarsCodecsVersion.V1, Codec.Tars, 15, 3)]
+        [InlineData((byte)23, TarsCodecsVersion.V1, Codec.Tars, 255, 3)]
+        [InlineData(byte.MaxValue, TarsCodecsVersion.V1, Codec.Tars, 1, 2)]
+        [InlineData((byte)1, TarsCodecsVersion.V2, Codec.Tars, 11, 2)]
+        [InlineData((byte)1, TarsCodecsVersion.V2, Codec.Tars, 15, 3)]
+        [InlineData((byte)23, TarsCodecsVersion.V2, Codec.Tars, 255, 3)]
+        [InlineData(byte.MaxValue, TarsCodecsVersion.V2, Codec.Tars, 1, 2)]
+        [InlineData((byte)1, TarsCodecsVersion.V3, Codec.Tars, 11, 2)]
+        [InlineData((byte)1, TarsCodecsVersion.V3, Codec.Tars, 15, 3)]
+        [InlineData((byte)23, TarsCodecsVersion.V3, Codec.Tars, 255, 3)]
+        [InlineData(byte.MaxValue, TarsCodecsVersion.V3, Codec.Tars, 1, 2)]
+        public void WhenNullableShouldEqualExpect(byte obj, short version, Codec codec, int tag, int length)
+        {
+            var buffer = Unpooled.Buffer(1);
+            var options = new TarsConvertOptions()
+            {
+                Codec = codec,
+                Version = version,
+                Tag = tag
+            };
+            byte? nullable = obj;
+            sut.Serialize(nullable, buffer, options);
+            Assert.Equal(length, buffer.ReadableBytes);
+            var bytes = new byte[length];
+            buffer.ReadBytes(bytes);
+            Assert.Equal(obj, bytes.Last());
+            options.Tag = 0;
+            buffer = buffer.ResetReaderIndex();
+            headHandler.ReadHead(buffer, options);
+            var result = sut.Deserialize<byte>(buffer, options);
+            Assert.Equal(result, obj);
+            Assert.Equal(tag, options.Tag);
+            Assert.Equal(TarsStructType.Byte, options.TarsType);
+        }
     }
 }
