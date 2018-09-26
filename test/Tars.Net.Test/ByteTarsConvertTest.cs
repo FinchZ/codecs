@@ -200,7 +200,7 @@ namespace Tars.Net.Test
             options.Tag = 0;
             buffer = buffer.ResetReaderIndex();
             headHandler.ReadHead(buffer, options);
-            var result = sut.Deserialize<byte>(buffer, options);
+            var result = sut.Deserialize<byte?>(buffer, options);
             Assert.Equal(result, obj);
             Assert.Equal(tag, options.Tag);
             Assert.Equal(TarsStructType.Byte, options.TarsType);

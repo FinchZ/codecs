@@ -1,5 +1,4 @@
 ﻿using DotNetty.Buffers;
-using Microsoft.Extensions.DependencyInjection;
 using Tars.Net.Codecs;
 using Xunit;
 
@@ -8,13 +7,11 @@ namespace Tars.Net.Test
     public class BoolTarsConvertTest
     {
         private readonly ITarsConvertRoot sut;
-        private readonly ITarsConvert<bool> convert;
         private readonly ITarsHeadHandler headHandler;
 
         public BoolTarsConvertTest()
         {
             sut = TestTarsConvert.ConvertRoot;
-            convert = TestTarsConvert.Provider.GetRequiredService<ITarsConvert<bool>>();
             headHandler = TestTarsConvert.HeadHandler;
         }
 
@@ -40,6 +37,9 @@ namespace Tars.Net.Test
             Assert.Equal(byteValue, result);
             Assert.Equal(tag, options.Tag);
             Assert.Equal(tarsStructType, options.TarsType);
+            buffer = buffer.ResetReaderIndex();
+            headHandler.ReadHead(buffer, options);
+            Assert.Equal(obj, sut.Deserialize<bool>(buffer, options));
         }
 
         [Theory]
@@ -65,6 +65,9 @@ namespace Tars.Net.Test
             Assert.Equal(byteValue, result);
             Assert.Equal(tag, options.Tag);
             Assert.Equal(tarsStructType, options.TarsType);
+            buffer = buffer.ResetReaderIndex();
+            headHandler.ReadHead(buffer, options);
+            Assert.Equal(obj, sut.Deserialize<bool?>(buffer, options));
         }
 
         [Theory]
