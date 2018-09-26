@@ -15,31 +15,29 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructType.ZERO_TAG:
+                case TarsStructType.Zero:
                     return 0x0;
 
-                case TarsStructType.BYTE:
+                case TarsStructType.Byte:
                     return buffer.ReadByte();
 
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    throw new TarsDecodeException($"ByteTarsConvert can not deserialize {options}");
             }
         }
 
         public override void Serialize(byte obj, IByteBuffer buffer, TarsConvertOptions options)
         {
+            if (!options.HasValue) return;
             headHandler.Reserve(buffer, 3);
             if (obj == 0)
             {
-                headHandler.WriteHead(buffer, TarsStructType.ZERO_TAG, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.Zero, options.Tag);
             }
             else
             {
-                headHandler.WriteHead(buffer, TarsStructType.BYTE, options.Tag);
-                if (options.HasValue)
-                {
-                    buffer.WriteByte(obj);
-                }
+                headHandler.WriteHead(buffer, TarsStructType.Byte, options.Tag);
+                buffer.WriteByte(obj);
             }
         }
     }

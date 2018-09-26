@@ -23,7 +23,7 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructType.MAP:
+                case TarsStructType.Map:
                     {
                         int size = buffer.ReadInt();
                         if (size < 0)
@@ -57,7 +57,7 @@ namespace Tars.Net.Codecs
         public override void Serialize(IDictionary<K, V> obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             headHandler.Reserve(buffer, 8);
-            headHandler.WriteHead(buffer, TarsStructType.MAP, options.Tag);
+            headHandler.WriteHead(buffer, TarsStructType.Map, options.Tag);
             if (obj == null)
             {
                 buffer.WriteInt(0);

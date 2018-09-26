@@ -34,18 +34,18 @@ namespace Tars.Net.Codecs
 
         public override T Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            if (options.TarsType == TarsStructType.STRUCT_BEGIN)
+            if (options.TarsType == TarsStructType.StructBegin)
             {
                 headHandler.ReadHead(buffer, options);
             }
 
-            if (options.TarsType == TarsStructType.STRUCT_END)
+            if (options.TarsType == TarsStructType.StructEnd)
             {
                 return null;
             }
 
             var result = new T();
-            while (options.TarsType != TarsStructType.STRUCT_END)
+            while (options.TarsType != TarsStructType.StructEnd)
             {
                 var p = properties[options.Tag];
                 p.SetValue(result, convert.Deserialize(buffer, p.GetMemberInfo().PropertyType, options));
@@ -57,7 +57,7 @@ namespace Tars.Net.Codecs
         public override void Serialize(T obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             headHandler.Reserve(buffer, 2);
-            headHandler.WriteHead(buffer, TarsStructType.STRUCT_BEGIN, options.Tag);
+            headHandler.WriteHead(buffer, TarsStructType.StructBegin, options.Tag);
             if (obj != null)
             {
                 foreach (var kv in properties)
@@ -67,7 +67,7 @@ namespace Tars.Net.Codecs
                 }
             }
             headHandler.Reserve(buffer, 2);
-            headHandler.WriteHead(buffer, TarsStructType.STRUCT_END, options.Tag);
+            headHandler.WriteHead(buffer, TarsStructType.StructEnd, options.Tag);
         }
     }
 }

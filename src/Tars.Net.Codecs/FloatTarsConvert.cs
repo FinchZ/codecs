@@ -15,10 +15,10 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructType.ZERO_TAG:
+                case TarsStructType.Zero:
                     return 0x0;
 
-                case TarsStructType.FLOAT:
+                case TarsStructType.Float:
                     return buffer.ReadFloat();
 
                 default:
@@ -31,11 +31,11 @@ namespace Tars.Net.Codecs
             headHandler.Reserve(buffer, 6);
             if (obj == 0)
             {
-                headHandler.WriteHead(buffer, TarsStructType.ZERO_TAG, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.Zero, options.Tag);
             }
             else
             {
-                headHandler.WriteHead(buffer, TarsStructType.FLOAT, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.Float, options.Tag);
                 if (options.HasValue)
                 {
                     buffer.WriteFloat(obj);

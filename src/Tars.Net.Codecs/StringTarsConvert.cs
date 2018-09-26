@@ -15,15 +15,15 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructType.STRING1:
+                case TarsStructType.String1:
                     {
                         int len = buffer.ReadByte();
                         return buffer.ReadString(len, options.Encoding);
                     }
-                case TarsStructType.STRING4:
+                case TarsStructType.String4:
                     {
                         int len = buffer.ReadInt();
-                        if (len > TarsStructType.MAX_STRING_LENGTH || len < 0)
+                        if (len > TarsStructType.MaxStringLength || len < 0)
                         {
                             throw new TarsDecodeException("string too long: " + len);
                         }
@@ -39,18 +39,18 @@ namespace Tars.Net.Codecs
         {
             if (string.IsNullOrEmpty(obj))
             {
-                headHandler.WriteHead(buffer, TarsStructType.STRING1, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.String1, options.Tag);
                 buffer.WriteByte(0);
             }
             else if (obj.Length > 255)
             {
-                headHandler.WriteHead(buffer, TarsStructType.STRING4, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.String4, options.Tag);
                 buffer.WriteInt(obj.Length);
                 buffer.WriteString(obj, options.Encoding);
             }
             else
             {
-                headHandler.WriteHead(buffer, TarsStructType.STRING1, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.String1, options.Tag);
                 buffer.WriteByte(obj.Length);
                 buffer.WriteString(obj, options.Encoding);
             }

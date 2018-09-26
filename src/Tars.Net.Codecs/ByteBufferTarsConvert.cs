@@ -15,11 +15,11 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructType.SIMPLE_LIST:
+                case TarsStructType.ByteArray:
                     var tag = options.Tag;
                     var type = options.TarsType;
                     headHandler.ReadHead(buffer, options);
-                    if (options.TarsType != TarsStructType.BYTE)
+                    if (options.TarsType != TarsStructType.Byte)
                     {
                         throw new TarsDecodeException($"type mismatch, tag: {tag}, type: {options.TarsType},{type}");
                     }
@@ -41,8 +41,8 @@ namespace Tars.Net.Codecs
         {
             int len = obj.ReadableBytes;
             headHandler.Reserve(buffer, 8 + len);
-            headHandler.WriteHead(buffer, TarsStructType.SIMPLE_LIST, options.Tag);
-            headHandler.WriteHead(buffer, TarsStructType.BYTE, 0);
+            headHandler.WriteHead(buffer, TarsStructType.ByteArray, options.Tag);
+            headHandler.WriteHead(buffer, TarsStructType.Byte, 0);
             buffer.WriteInt(len);
             buffer.WriteBytes(obj);
         }

@@ -17,7 +17,7 @@ namespace Tars.Net.Codecs
         {
             switch (options.TarsType)
             {
-                case TarsStructType.INT:
+                case TarsStructType.Int:
                     return buffer.ReadInt();
 
                 default:
@@ -34,7 +34,7 @@ namespace Tars.Net.Codecs
             else
             {
                 headHandler.Reserve(buffer, 6);
-                headHandler.WriteHead(buffer, TarsStructType.INT, options.Tag);
+                headHandler.WriteHead(buffer, TarsStructType.Int, options.Tag);
                 if (options.HasValue)
                 {
                     buffer.WriteInt(obj);
