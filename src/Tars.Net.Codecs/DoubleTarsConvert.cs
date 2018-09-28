@@ -4,12 +4,10 @@ namespace Tars.Net.Codecs
 {
     public class DoubleTarsConvert : TarsConvertBase<double>
     {
-        private readonly ITarsConvert<float> convert;
         private readonly ITarsHeadHandler headHandler;
 
-        public DoubleTarsConvert(ITarsConvert<float> convert, ITarsHeadHandler headHandler)
+        public DoubleTarsConvert(ITarsHeadHandler headHandler)
         {
-            this.convert = convert;
             this.headHandler = headHandler;
         }
 
@@ -20,20 +18,27 @@ namespace Tars.Net.Codecs
                 case TarsStructType.Double:
                     return buffer.ReadDouble();
 
+                case TarsStructType.Zero:
+                    return 0x0;
+
                 default:
-                    return convert.Deserialize(buffer, options);
+                    throw new TarsDecodeException($"DoubleTarsConvert can not deserialize {options}");
             }
         }
 
         public override void Serialize(double obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            if (obj >= double.MinValue && obj <= double.MaxValue)
+            if (!options.HasValue)
             {
-                convert.Serialize((float)obj, buffer, options);
+                return;
+            }
+            headHandler.Reserve(buffer, 10);
+            if (obj == 0)
+            {
+                headHandler.WriteHead(buffer, TarsStructType.Zero, options.Tag);
             }
             else
             {
-                headHandler.Reserve(buffer, 10);
                 headHandler.WriteHead(buffer, TarsStructType.Double, options.Tag);
                 buffer.WriteDouble(obj);
             }

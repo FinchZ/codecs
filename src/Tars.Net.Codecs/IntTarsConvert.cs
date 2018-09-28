@@ -27,6 +27,10 @@ namespace Tars.Net.Codecs
 
         public override void Serialize(int obj, IByteBuffer buffer, TarsConvertOptions options)
         {
+            if (!options.HasValue)
+            {
+                return;
+            }
             if (obj >= short.MinValue && obj <= short.MaxValue)
             {
                 convert.Serialize((short)obj, buffer, options);
@@ -35,10 +39,7 @@ namespace Tars.Net.Codecs
             {
                 headHandler.Reserve(buffer, 6);
                 headHandler.WriteHead(buffer, TarsStructType.Int, options.Tag);
-                if (options.HasValue)
-                {
-                    buffer.WriteInt(obj);
-                }
+                buffer.WriteInt(obj);
             }
         }
     }

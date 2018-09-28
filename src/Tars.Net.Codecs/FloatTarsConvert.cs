@@ -22,12 +22,16 @@ namespace Tars.Net.Codecs
                     return buffer.ReadFloat();
 
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    throw new TarsDecodeException($"FloatTarsConvert can not deserialize {options}");
             }
         }
 
         public override void Serialize(float obj, IByteBuffer buffer, TarsConvertOptions options)
         {
+            if (!options.HasValue)
+            {
+                return;
+            }
             headHandler.Reserve(buffer, 6);
             if (obj == 0)
             {
@@ -36,10 +40,7 @@ namespace Tars.Net.Codecs
             else
             {
                 headHandler.WriteHead(buffer, TarsStructType.Float, options.Tag);
-                if (options.HasValue)
-                {
-                    buffer.WriteFloat(obj);
-                }
+                buffer.WriteFloat(obj);
             }
         }
     }
