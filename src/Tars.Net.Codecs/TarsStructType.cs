@@ -16,7 +16,5 @@
         public const byte StructEnd = 11;//结构体结束符 0x0b
         public const byte Zero = 12;//常数0 0x0c
         public const byte ByteArray = 13;//字节数组 0x0d
-
-        public const int MaxStringLength = 100 * 1024 * 1024;
     }
 }
