@@ -70,7 +70,7 @@ namespace Tars.Net.Test
                 Version = version,
                 Tag = tag
             };
-            sut.Serialize(byte.MinValue, buffer, options);
+            sut.Serialize(0f, buffer, options);
             var bytes = new byte[buffer.ReadableBytes];
             buffer.ReadBytes(bytes);
             Assert.Equal(value, bytes.Last());

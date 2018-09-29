@@ -19,26 +19,21 @@ namespace Tars.Net.Codecs
                     var tag = options.Tag;
                     var type = options.TarsType;
                     headHandler.ReadHead(buffer, options);
-                    if (options.TarsType != TarsStructType.Byte)
-                    {
-                        throw new TarsDecodeException($"type mismatch, tag: {tag}, type: {options.TarsType},{type}");
-                    }
-
                     int size = buffer.ReadInt();
-                    if (size < 0)
-                    {
-                        throw new TarsDecodeException($"invalid size tag: {tag}, type: {options.TarsType},{type}, size: {size}");
-                    }
-
                     return buffer.ReadBytes(size);
 
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    throw new TarsDecodeException($"ByteBufferTarsConvert can not deserialize {options}");
             }
         }
 
         public override void Serialize(IByteBuffer obj, IByteBuffer buffer, TarsConvertOptions options)
         {
+            if (obj == null)
+            {
+                return;
+            }
+
             int len = obj.ReadableBytes;
             headHandler.Reserve(buffer, 8 + len);
             headHandler.WriteHead(buffer, TarsStructType.ByteArray, options.Tag);
