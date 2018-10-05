@@ -16,8 +16,6 @@ namespace Tars.Net.Codecs
             switch (options.TarsType)
             {
                 case TarsStructType.ByteArray:
-                    var tag = options.Tag;
-                    var type = options.TarsType;
                     headHandler.ReadHead(buffer, options);
                     int size = buffer.ReadInt();
                     return buffer.ReadBytes(size);

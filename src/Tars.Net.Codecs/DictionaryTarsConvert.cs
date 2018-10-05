@@ -3,16 +3,19 @@ using System.Collections.Generic;
 
 namespace Tars.Net.Codecs
 {
-    public interface IDictionaryTarsConvert<K, V> : ITarsConvert<IDictionary<K, V>>
+    public interface IDictionaryInterfaceTarsConvert<K, V> : ITarsConvert<IDictionary<K, V>>
     { }
 
-    public class DictionaryTarsConvert<K, V> : TarsConvertBase<IDictionary<K, V>>, IDictionaryTarsConvert<K, V>
+    public interface IDictionaryClassTarsConvert<K, V> : ITarsConvert<Dictionary<K, V>>
+    { }
+
+    public class DictionaryInterfaceTarsConvert<K, V> : TarsConvertBase<IDictionary<K, V>>, IDictionaryInterfaceTarsConvert<K, V>
     {
         private readonly ITarsConvert<K> kConvert;
         private readonly ITarsConvert<V> vConvert;
         private readonly ITarsHeadHandler headHandler;
 
-        public DictionaryTarsConvert(ITarsConvert<K> kConvert, ITarsConvert<V> vConvert, ITarsHeadHandler headHandler)
+        public DictionaryInterfaceTarsConvert(ITarsConvert<K> kConvert, ITarsConvert<V> vConvert, ITarsHeadHandler headHandler)
         {
             this.kConvert = kConvert;
             this.vConvert = vConvert;
@@ -26,18 +29,14 @@ namespace Tars.Net.Codecs
                 case TarsStructType.Map:
                     {
                         int size = buffer.ReadInt();
-                        if (size < 0)
-                        {
-                            throw new TarsDecodeException("size invalid: " + size);
-                        }
-
                         var dict = new Dictionary<K, V>(size);
+                        var op = options.Create();
                         for (int i = 0; i < size; ++i)
                         {
-                            headHandler.ReadHead(buffer, options);
-                            var k = kConvert.Deserialize(buffer, options);
-                            headHandler.ReadHead(buffer, options);
-                            var v = vConvert.Deserialize(buffer, options);
+                            headHandler.ReadHead(buffer, op);
+                            var k = kConvert.Deserialize(buffer, op);
+                            headHandler.ReadHead(buffer, op);
+                            var v = vConvert.Deserialize(buffer, op);
                             if (dict.ContainsKey(k))
                             {
                                 dict[k] = v;
@@ -50,20 +49,16 @@ namespace Tars.Net.Codecs
                         return dict;
                     }
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    throw new TarsDecodeException($"DictionaryTarsConvert can not deserialize {options}");
             }
         }
 
         public override void Serialize(IDictionary<K, V> obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            headHandler.Reserve(buffer, 8);
-            headHandler.WriteHead(buffer, TarsStructType.Map, options.Tag);
-            if (obj == null)
+            if (obj != null)
             {
-                buffer.WriteInt(0);
-            }
-            else
-            {
+                headHandler.Reserve(buffer, 8);
+                headHandler.WriteHead(buffer, TarsStructType.Map, options.Tag);
                 buffer.WriteInt(obj.Count);
                 foreach (var kv in obj)
                 {
@@ -73,6 +68,26 @@ namespace Tars.Net.Codecs
                     vConvert.Serialize(kv.Value, buffer, options);
                 }
             }
+        }
+    }
+
+    public class DictionaryClassTarsConvert<K, V> : TarsConvertBase<Dictionary<K, V>>, IDictionaryClassTarsConvert<K, V>
+    {
+        private readonly IDictionaryInterfaceTarsConvert<K, V> convert;
+
+        public DictionaryClassTarsConvert(IDictionaryInterfaceTarsConvert<K, V> convert)
+        {
+            this.convert = convert;
+        }
+
+        public override Dictionary<K, V> Deserialize(IByteBuffer buffer, TarsConvertOptions options)
+        {
+            return convert.Deserialize(buffer, options) as Dictionary<K, V>;
+        }
+
+        public override void Serialize(Dictionary<K, V> obj, IByteBuffer buffer, TarsConvertOptions options)
+        {
+            convert.Serialize(obj as IDictionary<K, V>, buffer, options);
         }
     }
 }

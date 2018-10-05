@@ -20,5 +20,15 @@ namespace Tars.Net.Codecs
         {
             return $"TarsType:{TarsType},Codec:{Codec},Version:{Version},Tag:{Tag},Encoding:{Encoding}";
         }
+
+        public TarsConvertOptions Create()
+        {
+            return new TarsConvertOptions()
+            {
+                 Encoding = Encoding,
+                 Version = Version,
+                 Codec = Codec
+            };
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace Tars.Net.Codecs
         private readonly ITarsConvert<int> intConvert;
         private readonly ITarsConvert<byte> byteConvert;
         private readonly ITarsConvert<string> stringConvert;
-        private readonly IDictionaryTarsConvert<string, string> dictConvert;
+        private readonly IDictionaryInterfaceTarsConvert<string, string> dictConvert;
         private readonly ITarsConvert<IByteBuffer> bufferConvert;
         private readonly ITarsConvertRoot convertRoot;
         private readonly IRpcMetadata rpcMetadata;
@@ -23,7 +23,7 @@ namespace Tars.Net.Codecs
 
         public ResponseTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
-            IDictionaryTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
+            IDictionaryInterfaceTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
             ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata, ITarsHeadHandler headHandler)
         {
             this.shortConvert = shortConvert;

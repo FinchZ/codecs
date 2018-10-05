@@ -3,15 +3,18 @@ using System.Collections.Generic;
 
 namespace Tars.Net.Codecs
 {
-    public interface IListTarsConvert<T> : ITarsConvert<IList<T>>
+    public interface IListInterfaceTarsConvert<T> : ITarsConvert<IList<T>>
     { }
 
-    public class ListTarsConvert<T> : TarsConvertBase<IList<T>>, IListTarsConvert<T>
+    public interface IListClassTarsConvert<T> : ITarsConvert<List<T>>
+    { }
+
+    public class ListInterfaceTarsConvert<T> : TarsConvertBase<IList<T>>, IListInterfaceTarsConvert<T>
     {
         private readonly ITarsConvert<T> convert;
         private readonly ITarsHeadHandler headHandler;
 
-        public ListTarsConvert(ITarsConvert<T> convert, ITarsHeadHandler headHandler)
+        public ListInterfaceTarsConvert(ITarsConvert<T> convert, ITarsHeadHandler headHandler)
         {
             this.convert = convert;
             this.headHandler = headHandler;
@@ -24,41 +27,55 @@ namespace Tars.Net.Codecs
                 case TarsStructType.List:
                     {
                         int size = buffer.ReadInt();
-                        if (size < 0)
-                        {
-                            throw new TarsDecodeException("size invalid: " + size);
-                        }
-
                         var list = new List<T>(size);
+                        var op = options.Create();
                         for (int i = 0; i < size; ++i)
                         {
-                            headHandler.ReadHead(buffer, options);
-                            var t = convert.Deserialize(buffer, options);
+                            headHandler.ReadHead(buffer, op);
+                            var t = convert.Deserialize(buffer, op);
                             list.Add(t);
                         }
                         return list;
                     }
                 default:
-                    throw new TarsDecodeException("type mismatch.");
+                    throw new TarsDecodeException($"DictionaryTarsConvert can not deserialize {options}");
             }
         }
 
         public override void Serialize(IList<T> obj, IByteBuffer buffer, TarsConvertOptions options)
         {
-            headHandler.Reserve(buffer, 8);
-            headHandler.WriteHead(buffer, TarsStructType.List, options.Tag);
-            if (obj == null)
+            if (obj != null)
             {
-                buffer.WriteInt(0);
-            }
-            else
-            {
+                headHandler.Reserve(buffer, 8);
+                headHandler.WriteHead(buffer, TarsStructType.List, options.Tag);
                 buffer.WriteInt(obj.Count);
+                var op = options.Create();
+                op.Tag = 0;
                 foreach (var item in obj)
                 {
-                    convert.Serialize(item, buffer, options);
+                    convert.Serialize(item, buffer, op);
                 }
             }
+        }
+    }
+
+    public class ListClassTarsConvert<T> : TarsConvertBase<List<T>>, IListClassTarsConvert<T>
+    {
+        private readonly IListInterfaceTarsConvert<T> convert;
+
+        public ListClassTarsConvert(IListInterfaceTarsConvert<T> convert)
+        {
+            this.convert = convert;
+        }
+
+        public override List<T> Deserialize(IByteBuffer buffer, TarsConvertOptions options)
+        {
+            return convert.Deserialize(buffer, options) as List<T>;
+        }
+
+        public override void Serialize(List<T> obj, IByteBuffer buffer, TarsConvertOptions options)
+        {
+            convert.Serialize(obj as IList<T>, buffer, options);
         }
     }
 }

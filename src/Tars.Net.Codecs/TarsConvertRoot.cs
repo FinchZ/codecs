@@ -61,11 +61,19 @@ namespace Tars.Net.Codecs
             }
             else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>))
             {
-                return typeof(IListTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+                return typeof(IListInterfaceTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+            }
+            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                return typeof(IListClassTarsConvert<>).MakeGenericType(type.GetGenericArguments());
             }
             else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IDictionary<,>))
             {
-                return typeof(IDictionaryTarsConvert<,>).MakeGenericType(type.GetGenericArguments());
+                return typeof(IDictionaryInterfaceTarsConvert<,>).MakeGenericType(type.GetGenericArguments());
+            }
+            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+            {
+                return typeof(IDictionaryClassTarsConvert<,>).MakeGenericType(type.GetGenericArguments());
             }
             else if (type.IsClass && !type.IsAbstract && type.GetReflector().IsDefined<TarsStructAttribute>())
             {
