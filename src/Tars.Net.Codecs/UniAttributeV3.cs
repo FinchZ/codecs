@@ -7,16 +7,21 @@ namespace Tars.Net.Codecs
     public class UniAttributeV3
     {
         private readonly ITarsConvertRoot convert;
+        private readonly ITarsHeadHandler headHandler;
+
         public IDictionary<string, IByteBuffer> Temp { get; set; }
 
-        public UniAttributeV3(ITarsConvertRoot convert)
+        public UniAttributeV3(ITarsConvertRoot convert, ITarsHeadHandler headHandler)
         {
             this.convert = convert;
+            this.headHandler = headHandler;
         }
 
         public void Deserialize(IByteBuffer buffer, TarsConvertOptions options)
         {
-            Temp = convert.Deserialize<IDictionary<string, IByteBuffer>>(buffer, options);
+            var contentBuffer = convert.Deserialize<IByteBuffer>(buffer, options);
+            headHandler.ReadHead(contentBuffer, options);
+            Temp = convert.Deserialize<IDictionary<string, IByteBuffer>>(contentBuffer, options);
         }
 
         public void Serialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -31,16 +36,27 @@ namespace Tars.Net.Codecs
 
         public void Put(string name, object obj, Type type, TarsConvertOptions options)
         {
-            var buf = Unpooled.Buffer(128);
-            options.Tag = 0;
-            convert.Serialize(obj, type, buf, options);
-            if (Temp.ContainsKey(name))
+            if (name == null)
             {
-                Temp[name] = buf;
+                throw new ArgumentException("put key can not be null");
             }
-            else
+            if (obj != null)
             {
-                Temp.Add(name, buf);
+                var buf = Unpooled.Buffer(128);
+                options.Tag = 0;
+                convert.Serialize(obj, type, buf, options);
+                if (Temp.ContainsKey(name))
+                {
+                    Temp[name] = buf;
+                }
+                else
+                {
+                    Temp.Add(name, buf);
+                }
+            }
+            else if (Temp.ContainsKey(name))
+            {
+                Temp.Remove(name);
             }
         }
     }

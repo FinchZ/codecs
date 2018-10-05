@@ -11,14 +11,12 @@ namespace Tars.Net.Codecs
 
     public class DictionaryInterfaceTarsConvert<K, V> : TarsConvertBase<IDictionary<K, V>>, IDictionaryInterfaceTarsConvert<K, V>
     {
-        private readonly ITarsConvert<K> kConvert;
-        private readonly ITarsConvert<V> vConvert;
+        private readonly ITarsConvertRoot convert;
         private readonly ITarsHeadHandler headHandler;
 
-        public DictionaryInterfaceTarsConvert(ITarsConvert<K> kConvert, ITarsConvert<V> vConvert, ITarsHeadHandler headHandler)
+        public DictionaryInterfaceTarsConvert(ITarsConvertRoot convert, ITarsHeadHandler headHandler)
         {
-            this.kConvert = kConvert;
-            this.vConvert = vConvert;
+            this.convert = convert;
             this.headHandler = headHandler;
         }
 
@@ -34,9 +32,9 @@ namespace Tars.Net.Codecs
                         for (int i = 0; i < size; ++i)
                         {
                             headHandler.ReadHead(buffer, op);
-                            var k = kConvert.Deserialize(buffer, op);
+                            var k = convert.Deserialize<K>(buffer, op);
                             headHandler.ReadHead(buffer, op);
-                            var v = vConvert.Deserialize(buffer, op);
+                            var v = convert.Deserialize<V>(buffer, op);
                             if (dict.ContainsKey(k))
                             {
                                 dict[k] = v;
@@ -63,9 +61,9 @@ namespace Tars.Net.Codecs
                 foreach (var kv in obj)
                 {
                     options.Tag = 0;
-                    kConvert.Serialize(kv.Key, buffer, options);
+                    convert.Serialize(kv.Key, buffer, options);
                     options.Tag = 1;
-                    vConvert.Serialize(kv.Value, buffer, options);
+                    convert.Serialize(kv.Value, buffer, options);
                 }
             }
         }

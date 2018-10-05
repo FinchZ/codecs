@@ -89,10 +89,8 @@ namespace Tars.Net.Codecs
 
                     case 7 when options.Version == TarsCodecsVersion.V2:
                         {
-                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
-                            var uni = new UniAttributeV2(convertRoot);
-                            headHandler.ReadHead(contentBuffer, options);
-                            uni.Deserialize(contentBuffer, options);
+                            var uni = new UniAttributeV2(convertRoot, headHandler);
+                            uni.Deserialize(buffer, options);
                             var buf = uni.Temp[string.Empty].Values.First();
                             headHandler.ReadHead(buf, options);
                             resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
@@ -108,10 +106,8 @@ namespace Tars.Net.Codecs
 
                     case 7 when options.Version == TarsCodecsVersion.V3:
                         {
-                            var contentBuffer = bufferConvert.Deserialize(buffer, options);
-                            var uni = new UniAttributeV3(convertRoot);
-                            headHandler.ReadHead(contentBuffer, options);
-                            uni.Deserialize(contentBuffer, options);
+                            var uni = new UniAttributeV3(convertRoot, headHandler);
+                            uni.Deserialize(buffer, options);
                             if (uni.Temp.ContainsKey(string.Empty))
                             {
                                 var buf = uni.Temp[string.Empty];
@@ -263,7 +259,7 @@ namespace Tars.Net.Codecs
             stringConvert.Serialize(obj.FuncName, buffer, options);
             if (options.Version == TarsCodecsVersion.V2)
             {
-                var uni = new UniAttributeV2(convertRoot)
+                var uni = new UniAttributeV2(convertRoot, headHandler)
                 {
                     Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>()
                 };
@@ -286,7 +282,7 @@ namespace Tars.Net.Codecs
             }
             else
             {
-                var uni = new UniAttributeV3(convertRoot)
+                var uni = new UniAttributeV3(convertRoot, headHandler)
                 {
                     Temp = new Dictionary<string, IByteBuffer>()
                 };
