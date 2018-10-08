@@ -85,6 +85,7 @@ namespace Tars.Net.Test
         [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.Short, "ByteBufferTarsConvert can not deserialize TarsType:1,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.Int, "ByteBufferTarsConvert can not deserialize TarsType:2,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.Long, "ByteBufferTarsConvert can not deserialize TarsType:3,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.Float, "ByteBufferTarsConvert can not deserialize TarsType:4,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.Double, "ByteBufferTarsConvert can not deserialize TarsType:5,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.String1, "ByteBufferTarsConvert can not deserialize TarsType:6,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V1, Codec.Tars, TarsStructType.String4, "ByteBufferTarsConvert can not deserialize TarsType:7,Codec:Tars,Version:1,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
@@ -97,6 +98,7 @@ namespace Tars.Net.Test
         [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.Short, "ByteBufferTarsConvert can not deserialize TarsType:1,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.Int, "ByteBufferTarsConvert can not deserialize TarsType:2,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.Long, "ByteBufferTarsConvert can not deserialize TarsType:3,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
+        [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.Float, "ByteBufferTarsConvert can not deserialize TarsType:4,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.Double, "ByteBufferTarsConvert can not deserialize TarsType:5,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.String1, "ByteBufferTarsConvert can not deserialize TarsType:6,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars, TarsStructType.String4, "ByteBufferTarsConvert can not deserialize TarsType:7,Codec:Tars,Version:2,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
@@ -109,6 +111,7 @@ namespace Tars.Net.Test
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.Short, "ByteBufferTarsConvert can not deserialize TarsType:1,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.Int, "ByteBufferTarsConvert can not deserialize TarsType:2,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.Long, "ByteBufferTarsConvert can not deserialize TarsType:3,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
+        [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.Float, "ByteBufferTarsConvert can not deserialize TarsType:4,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.Double, "ByteBufferTarsConvert can not deserialize TarsType:5,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.String1, "ByteBufferTarsConvert can not deserialize TarsType:6,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.String4, "ByteBufferTarsConvert can not deserialize TarsType:7,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
@@ -117,7 +120,7 @@ namespace Tars.Net.Test
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.StructBegin, "ByteBufferTarsConvert can not deserialize TarsType:10,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.StructEnd, "ByteBufferTarsConvert can not deserialize TarsType:11,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars, TarsStructType.Zero, "ByteBufferTarsConvert can not deserialize TarsType:12,Codec:Tars,Version:3,Tag:1,Encoding:System.Text.UTF8Encoding+UTF8EncodingSealed")]
-        public void ShouldOnlyCanDeserializeZERO_TAGAndFloat(short version, Codec codec, byte tarsStructType, string error)
+        public void ShouldOnlyCanDeserializeByteArray(short version, Codec codec, byte tarsStructType, string error)
         {
             var buffer = Unpooled.WrappedBuffer(new byte[] { 255 });
             var options = new TarsConvertOptions()

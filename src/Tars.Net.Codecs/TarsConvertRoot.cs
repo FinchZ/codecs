@@ -77,7 +77,7 @@ namespace Tars.Net.Codecs
             }
             else if (type.IsClass && !type.IsAbstract && type.GetReflector().IsDefined<TarsStructAttribute>())
             {
-                return typeof(IStructTarsConvert<>).MakeGenericType(type.GetGenericArguments());
+                return typeof(IStructTarsConvert<>).MakeGenericType(type);
             }
             else
             {
