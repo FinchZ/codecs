@@ -140,8 +140,6 @@ namespace Tars.Net.Codecs
         {
             options.Tag = 1;
             options.Version = obj.Version;
-            // for test
-            obj.Version = options.Version = 0x03;
             shortConvert.Serialize(obj.Version, buffer, options);
             options.Tag = 2;
             byteConvert.Serialize(obj.PacketType, buffer, options);

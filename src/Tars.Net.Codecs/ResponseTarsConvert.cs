@@ -231,9 +231,10 @@ namespace Tars.Net.Codecs
         public override void Serialize(Response obj, IByteBuffer buffer, TarsConvertOptions options)
         {
             options.Tag = 1;
+            options.Version = obj.Version;
             shortConvert.Serialize(obj.Version, buffer, options);
             options.Tag = 2;
-            byteConvert.Serialize(TarsPacketType.NORMAL, buffer, options);
+            byteConvert.Serialize(obj.PacketType, buffer, options);
             switch (options.Version)
             {
                 case TarsCodecsVersion.V2:
