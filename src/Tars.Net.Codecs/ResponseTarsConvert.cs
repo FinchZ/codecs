@@ -1,10 +1,6 @@
-﻿using AspectCore.Extensions.Reflection;
-using DotNetty.Buffers;
-using System;
+﻿using DotNetty.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
@@ -91,13 +87,16 @@ namespace Tars.Net.Codecs
                         {
                             var uni = new UniAttributeV2(convertRoot, headHandler);
                             uni.Deserialize(buffer, options);
-                            var buf = uni.Temp[string.Empty].Values.First();
-                            headHandler.ReadHead(buf, options);
-                            resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
+                            if (uni.Temp.ContainsKey(string.Empty))
+                            {
+                                var buf = uni.Temp[string.Empty].Values.First();
+                                headHandler.ReadHead(buf, options);
+                                resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
+                            }
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
                                 var pt = resp.ReturnParameterTypes[i];
-                                buf = uni.Temp[pt.Name].Values.First();
+                                var buf = uni.Temp[pt.Name].Values.First();
                                 headHandler.ReadHead(buf, options);
                                 resp.ReturnParameters[i] = convertRoot.Deserialize(buf, pt.ParameterType, options);
                             }
@@ -113,10 +112,6 @@ namespace Tars.Net.Codecs
                                 var buf = uni.Temp[string.Empty];
                                 headHandler.ReadHead(buf, options);
                                 resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
-                            }
-                            else if (resp.ReturnValueType.ParameterType.GetTypeInfo().IsTask())
-                            {
-                                resp.ReturnValue = Task.CompletedTask;
                             }
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
@@ -173,42 +168,15 @@ namespace Tars.Net.Codecs
                             var returnType = resp.ReturnValueType.ParameterType;
                             if (returnType != typeof(void))
                             {
-                                if (returnType == typeof(Task) || returnType == typeof(ValueType))
-                                {
-                                    resp.ReturnValue = Task.CompletedTask;
-                                }
-                                else
-                                {
-                                    headHandler.ReadHead(contentBuffer, options);
-                                    if (returnType.BaseType == typeof(Task))
-                                    {
-                                        var resultType = returnType.GenericTypeArguments[0];
-                                        resp.ReturnValue = Task.FromResult(convertRoot.Deserialize(contentBuffer, resultType, options));
-                                    }
-                                    else if (returnType.BaseType == typeof(ValueType))
-                                    {
-                                        var resultType = returnType.GenericTypeArguments[0];
-                                        var resultItem = convertRoot.Deserialize(contentBuffer, resultType, options);
-                                        resp.ReturnValue = Activator.CreateInstance(returnType, new object[1] { resultItem });
-                                    }
-                                    else
-                                    {
-                                        resp.ReturnValue = convertRoot.Deserialize(contentBuffer, returnType, options);
-                                    }
-                                }
+                                headHandler.ReadHead(contentBuffer, options);
+                                resp.ReturnValue = convertRoot.Deserialize(contentBuffer, returnType, options);
                             }
-                            if (resp.ReturnParameterTypes.Length > 0)
-                            {
-                                if (resp.ReturnParameters == null)
-                                {
-                                    resp.ReturnParameters = new object[resp.ReturnParameterTypes.Length];
-                                }
+                            resp.ReturnParameters = new object[resp.ReturnParameterTypes.Length];
 
-                                for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
-                                {
-                                    options.Tag = i + 1;
-                                    resp.ReturnParameters[i] = convertRoot.Deserialize(contentBuffer, resp.ReturnParameterTypes[i].ParameterType, options);
-                                }
+                            for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
+                            {
+                                options.Tag = i + 1;
+                                resp.ReturnParameters[i] = convertRoot.Deserialize(contentBuffer, resp.ReturnParameterTypes[i].ParameterType, options);
                             }
                         }
                         break;
@@ -265,18 +233,15 @@ namespace Tars.Net.Codecs
                     Temp = new Dictionary<string, IDictionary<string, IByteBuffer>>()
                 };
                 var type = obj.ReturnValueType.ParameterType;
-                if (obj.ReturnValue != null && type != typeof(void) && type != typeof(Task))
+                if (obj.ReturnValue != null && type != typeof(void))
                 {
                     uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
                 }
 
-                if (obj.ReturnParameterTypes != null)
+                for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
                 {
-                    for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
-                    {
-                        var pt = obj.ReturnParameterTypes[i];
-                        uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
-                    }
+                    var pt = obj.ReturnParameterTypes[i];
+                    uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
                 }
                 options.Tag = 7;
                 uni.Serialize(buffer, options);
@@ -288,17 +253,14 @@ namespace Tars.Net.Codecs
                     Temp = new Dictionary<string, IByteBuffer>()
                 };
                 var type = obj.ReturnValueType.ParameterType;
-                if (obj.ReturnValue != null && type != typeof(void) && type != typeof(Task))
+                if (obj.ReturnValue != null && type != typeof(void))
                 {
                     uni.Put(string.Empty, obj.ReturnValue, obj.ReturnValueType.ParameterType, options);
                 }
-                if (obj.ReturnParameterTypes != null)
+                for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
                 {
-                    for (int i = 0; i < obj.ReturnParameterTypes.Length; i++)
-                    {
-                        var pt = obj.ReturnParameterTypes[i];
-                        uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
-                    }
+                    var pt = obj.ReturnParameterTypes[i];
+                    uni.Put(pt.Name, obj.ReturnParameters[i], pt.ParameterType, options);
                 }
                 options.Tag = 7;
                 uni.Serialize(buffer, options);
@@ -323,18 +285,11 @@ namespace Tars.Net.Codecs
             if (obj.ResultStatusCode == RpcStatusCode.ServerSuccess)
             {
                 var type = obj.ReturnValueType.ParameterType;
-                if (type != typeof(void) && type != typeof(Task))
+                if (type != typeof(void))
                 {
                     //0的位置是专门给返回值用的
                     options.Tag = 0;
-                    if (type.GetTypeInfo().IsTaskWithResult())
-                    {
-                        convertRoot.Serialize(type.GetProperty("Result").GetReflector().GetValue(obj.ReturnValue), type.GenericTypeArguments[0], contentBuffer, options);
-                    }
-                    else
-                    {
-                        convertRoot.Serialize(obj.ReturnValue, type, contentBuffer, options);
-                    }
+                    convertRoot.Serialize(obj.ReturnValue, type, contentBuffer, options);
                 }
                 int outResIndex = 0;
                 foreach (var item in obj.ReturnParameterTypes)
@@ -345,21 +300,15 @@ namespace Tars.Net.Codecs
             }
             options.Tag = 6;
             bufferConvert.Serialize(contentBuffer, buffer, options);
-            if (obj.Status != null)
-            {
-                options.Tag = 7;
-                dictConvert.Serialize(obj.Status, buffer, options);
-            }
+            options.Tag = 7;
+            dictConvert.Serialize(obj.Status, buffer, options);
             if (obj.ResultStatusCode != RpcStatusCode.ServerSuccess)
             {
                 options.Tag = 8;
                 stringConvert.Serialize(obj.ResultDesc, buffer, options);
             }
-            if (obj.Context != null)
-            {
-                options.Tag = 9;
-                dictConvert.Serialize(obj.Context, buffer, options);
-            }
+            options.Tag = 9;
+            dictConvert.Serialize(obj.Context, buffer, options);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using DotNetty.Buffers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.Threading.Tasks;
 using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
@@ -30,10 +31,11 @@ namespace Tars.Net.Codecs
                 .TryAddEnumerable<ITarsConvert<long?>, NullableTarsConvert<long>>()
                 .TryAddEnumerable<ITarsConvert<float?>, NullableTarsConvert<float>>()
                 .TryAddEnumerable<ITarsConvert<double?>, NullableTarsConvert<double>>()
-                .TryAddEnumerable<ITarsConvert<IByteBuffer>, ByteBufferTarsConvert>();
+                .TryAddEnumerable<ITarsConvert<IByteBuffer>, ByteBufferTarsConvert>()
+                .TryAddEnumerable<ITarsConvert<Task>, TaskTarsConvert>();
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IListInterfaceTarsConvert<>), typeof(ListInterfaceTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IListClassTarsConvert<>), typeof(ListClassTarsConvert<>), ServiceLifetime.Singleton));
-            services.TryAddEnumerable(new ServiceDescriptor(typeof(ITaskTarsConvert<>), typeof(TaskTarsConvert<>), ServiceLifetime.Singleton));
+            services.TryAddEnumerable(new ServiceDescriptor(typeof(ITaskTarsConvert<>), typeof(TaskResultTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IValueTaskTarsConvert<>), typeof(ValueTaskTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IStructTarsConvert<>), typeof(StructTarsConvert<>), ServiceLifetime.Singleton));
             services.TryAddEnumerable(new ServiceDescriptor(typeof(IDictionaryInterfaceTarsConvert<,>), typeof(DictionaryInterfaceTarsConvert<,>), ServiceLifetime.Singleton));
