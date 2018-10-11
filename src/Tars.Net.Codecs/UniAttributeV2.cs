@@ -47,6 +47,7 @@ namespace Tars.Net.Codecs
                 options.Tag = 0;
                 convert.Serialize(obj, type, buf, options);
                 Dictionary<string, IByteBuffer> pair = new Dictionary<string, IByteBuffer>(1) { { string.Empty, buf } };
+                if (buf.ReadableBytes == 0) return;
                 if (Temp.ContainsKey(name))
                 {
                     Temp[name] = pair;

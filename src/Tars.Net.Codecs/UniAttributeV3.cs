@@ -45,6 +45,7 @@ namespace Tars.Net.Codecs
                 var buf = Unpooled.Buffer(128);
                 options.Tag = 0;
                 convert.Serialize(obj, type, buf, options);
+                if (buf.ReadableBytes == 0) return;
                 if (Temp.ContainsKey(name))
                 {
                     Temp[name] = buf;

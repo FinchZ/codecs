@@ -1,6 +1,7 @@
 ﻿using DotNetty.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
@@ -93,6 +94,10 @@ namespace Tars.Net.Codecs
                                 headHandler.ReadHead(buf, options);
                                 resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
                             }
+                            else if (resp.ReturnValueType.ParameterType == typeof(Task))
+                            {
+                                resp.ReturnValue = Task.CompletedTask;
+                            }
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
                                 var pt = resp.ReturnParameterTypes[i];
@@ -112,6 +117,10 @@ namespace Tars.Net.Codecs
                                 var buf = uni.Temp[string.Empty];
                                 headHandler.ReadHead(buf, options);
                                 resp.ReturnValue = convertRoot.Deserialize(buf, resp.ReturnValueType.ParameterType, options);
+                            }
+                            else if (resp.ReturnValueType.ParameterType == typeof(Task))
+                            {
+                                resp.ReturnValue = Task.CompletedTask;
                             }
                             for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
                             {
