@@ -10,7 +10,8 @@ namespace Tars.Net.Test
 
         public TarsHeadHandlerTest()
         {
-            sut = TestTarsConvert.HeadHandler;
+            var test = new TestTarsConvert();
+            sut = test.HeadHandler;
         }
 
         [Theory]

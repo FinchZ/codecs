@@ -14,9 +14,10 @@ namespace Tars.Net.Test
 
         public ByteTarsConvertTest()
         {
-            sut = TestTarsConvert.ConvertRoot;
-            convert = TestTarsConvert.Provider.GetRequiredService<ITarsConvert<byte>>();
-            headHandler = TestTarsConvert.HeadHandler;
+            var test = new TestTarsConvert();
+            sut = test.ConvertRoot;
+            convert = test.Provider.GetRequiredService<ITarsConvert<byte>>();
+            headHandler = test.HeadHandler;
         }
 
         [Theory]

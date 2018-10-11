@@ -9,15 +9,6 @@ namespace Tars.Net.Test
 {
     public class RequestTarsConvertTest
     {
-        private readonly TarsDecoder decoder;
-        private readonly TarsEncoder encoder;
-
-        public RequestTarsConvertTest()
-        {
-            decoder = new TarsDecoder(TestTarsConvert.ConvertRoot);
-            encoder = new TarsEncoder(TestTarsConvert.ConvertRoot);
-        }
-
         [Theory]
         [InlineData(TarsCodecsVersion.V1, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars)]
@@ -41,7 +32,10 @@ namespace Tars.Net.Test
             };
             var method = GetType().GetMethod("ShouldEqualExpect");
             request.ParameterTypes = method.GetParameters();
-            TestTarsConvert.FindRpcMethodFunc = (servantName, funcName) =>
+            var test = new TestTarsConvert();
+            var decoder = new TarsDecoder(test.ConvertRoot);
+            var encoder = new TarsEncoder(test.ConvertRoot);
+            test.FindRpcMethodFunc = (servantName, funcName) =>
             {
                 return (method, true, new ParameterInfo[0], codec, version, method.DeclaringType);
             };

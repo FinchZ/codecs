@@ -8,13 +8,20 @@ namespace Tars.Net.Test
 {
     public class TestRpcMetadata : IRpcMetadata
     {
+        private readonly TestTarsConvert tarsConvert;
+
+        public TestRpcMetadata(TestTarsConvert tarsConvert)
+        {
+            this.tarsConvert = tarsConvert;
+        }
+
         public IEnumerable<Type> Clients => throw new NotImplementedException();
 
         public IEnumerable<(Type service, Type implementation)> RpcServices => throw new NotImplementedException();
 
         public (MethodInfo method, bool isOneway, ParameterInfo[] outParameters, Codec codec, short version, Type serviceType) FindRpcMethod(string servantName, string funcName)
         {
-            return TestTarsConvert.FindRpcMethod(servantName, funcName);
+            return tarsConvert.FindRpcMethod(servantName, funcName);
         }
 
         public bool IsRpcClientType(Type type)

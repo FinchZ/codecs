@@ -12,8 +12,9 @@ namespace Tars.Net.Test
 
         public DoubleTarsConvertTest()
         {
-            sut = TestTarsConvert.ConvertRoot;
-            headHandler = TestTarsConvert.HeadHandler;
+            var test = new TestTarsConvert();
+            sut = test.ConvertRoot;
+            headHandler = test.HeadHandler;
         }
 
         [Theory]

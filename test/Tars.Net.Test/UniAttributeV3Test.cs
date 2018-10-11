@@ -12,7 +12,8 @@ namespace Tars.Net.Test
 
         public UniAttributeV3Test()
         {
-            headHandler = TestTarsConvert.HeadHandler;
+            var test = new TestTarsConvert();
+            headHandler = test.HeadHandler;
         }
 
         [Theory]
@@ -20,7 +21,8 @@ namespace Tars.Net.Test
         [InlineData(Codec.Tars, 33)]
         public void UniAttributeTest(Codec codec, int tag)
         {
-            var sut = new UniAttributeV3(TestTarsConvert.ConvertRoot, TestTarsConvert.HeadHandler)
+            var test = new TestTarsConvert();
+            var sut = new UniAttributeV3(test.ConvertRoot, test.HeadHandler)
             {
                 Temp = new Dictionary<string, IByteBuffer>(3)
             };
@@ -43,21 +45,22 @@ namespace Tars.Net.Test
             sut.Deserialize(buf, options);
             Assert.Equal(3, sut.Temp.Count);
             var buffer = sut.Temp[string.Empty];
-            TestTarsConvert.HeadHandler.ReadHead(buffer, options);
-            Assert.Equal(1, TestTarsConvert.ConvertRoot.Deserialize<int>(buffer, options));
+            test.HeadHandler.ReadHead(buffer, options);
+            Assert.Equal(1, test.ConvertRoot.Deserialize<int>(buffer, options));
             buffer = sut.Temp["23"];
-            TestTarsConvert.HeadHandler.ReadHead(buffer, options);
-            Assert.Equal("23", TestTarsConvert.ConvertRoot.Deserialize<string>(buffer, options));
+            test.HeadHandler.ReadHead(buffer, options);
+            Assert.Equal("23", test.ConvertRoot.Deserialize<string>(buffer, options));
             buffer = sut.Temp["dd"];
-            TestTarsConvert.HeadHandler.ReadHead(buffer, options);
-            Assert.Equal(0d, TestTarsConvert.ConvertRoot.Deserialize<double>(buffer, options));
+            test.HeadHandler.ReadHead(buffer, options);
+            Assert.Equal(0d, test.ConvertRoot.Deserialize<double>(buffer, options));
         }
 
         [Theory]
         [InlineData(Codec.Tars, 231)]
         public void UniAttributeArgumentExceptionTest(Codec codec, int tag)
         {
-            var sut = new UniAttributeV3(TestTarsConvert.ConvertRoot, TestTarsConvert.HeadHandler)
+            var test = new TestTarsConvert();
+            var sut = new UniAttributeV3(test.ConvertRoot, test.HeadHandler)
             {
                 Temp = new Dictionary<string, IByteBuffer>(3)
             };
