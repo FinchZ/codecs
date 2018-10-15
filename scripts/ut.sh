@@ -9,6 +9,6 @@ cd ../../
 for project in test/**/*.csproj; do dotnet test --no-build $project; done
 cd test/Tars.Net.Test
 dotnet minicover uninstrument --workdir ../../
-dotnet minicover htmlreport --workdir ../../ --threshold 10
-dotnet minicover report --workdir ../../ --threshold 10
+dotnet minicover report --workdir ../../ --threshold 80
+dotnet minicover coverallsreport --workdir ../../ --output "coveralls.json" --branch "$TRAVIS_BRANCH" --service-name "$COVERALLS_SERVICE" --service-job-id "$TRAVIS_JOB_ID" --repo-token "$COVERALLS_TOKEN"
 cd ../../
