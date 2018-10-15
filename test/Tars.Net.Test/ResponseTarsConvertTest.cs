@@ -10,7 +10,7 @@ namespace Tars.Net.Test
     public class ResponseTarsConvertTest
     {
         [Theory]
-        //[InlineData(TarsCodecsVersion.V1, Codec.Tars)]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars)]
         public int ResponseShouldEqualExpect(short version, Codec codec)
@@ -40,6 +40,7 @@ namespace Tars.Net.Test
             var test = new TestTarsConvert();
             var decoder = new TarsDecoder(test.ConvertRoot);
             var encoder = new TarsEncoder(test.ConvertRoot);
+            test.FindRpcMethodByIdFunc = i => ("aa.aa", "go");
             test.FindRpcMethodFunc = (servantName, funcName) =>
             {
                 return (method, true, method.GetParameters(), codec, version, method.DeclaringType);
@@ -68,7 +69,7 @@ namespace Tars.Net.Test
         }
 
         [Theory]
-        //[InlineData(TarsCodecsVersion.V1, Codec.Tars)]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars)]
         public async Task ResponseWhenReturnTaskShouldEqualExpect(short version, Codec codec)
@@ -98,6 +99,7 @@ namespace Tars.Net.Test
             var test = new TestTarsConvert();
             var decoder = new TarsDecoder(test.ConvertRoot);
             var encoder = new TarsEncoder(test.ConvertRoot);
+            test.FindRpcMethodByIdFunc = i => ("aa.aa", "go");
             test.FindRpcMethodFunc = (servantName, funcName) =>
             {
                 return (method, true, method.GetParameters(), codec, version, method.DeclaringType);
@@ -126,7 +128,7 @@ namespace Tars.Net.Test
         }
 
         [Theory]
-        //[InlineData(TarsCodecsVersion.V1, Codec.Tars)]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars)]
         public async Task<int> ResponseWhenReturnTaskResultShouldEqualExpect(short version, Codec codec)
@@ -156,6 +158,7 @@ namespace Tars.Net.Test
             var test = new TestTarsConvert();
             var decoder = new TarsDecoder(test.ConvertRoot);
             var encoder = new TarsEncoder(test.ConvertRoot);
+            test.FindRpcMethodByIdFunc = i => ("aa.aa", "go");
             test.FindRpcMethodFunc = (servantName, funcName) =>
             {
                 return (method, true, method.GetParameters(), codec, version, method.DeclaringType);
@@ -184,7 +187,7 @@ namespace Tars.Net.Test
         }
 
         [Theory]
-        //[InlineData(TarsCodecsVersion.V1, Codec.Tars)]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars)]
         public async ValueTask<int> ResponseWhenReturnValueTaskShouldEqualExpect(short version, Codec codec)
@@ -213,6 +216,7 @@ namespace Tars.Net.Test
             var test = new TestTarsConvert();
             var decoder = new TarsDecoder(test.ConvertRoot);
             var encoder = new TarsEncoder(test.ConvertRoot);
+            test.FindRpcMethodByIdFunc = i => ("aa.aa", "go");
             test.FindRpcMethodFunc = (servantName, funcName) =>
             {
                 return (method, true, method.GetParameters(), codec, version, method.DeclaringType);
@@ -241,7 +245,7 @@ namespace Tars.Net.Test
         }
 
         [Theory]
-        //[InlineData(TarsCodecsVersion.V1, Codec.Tars)]
+        [InlineData(TarsCodecsVersion.V1, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V2, Codec.Tars)]
         [InlineData(TarsCodecsVersion.V3, Codec.Tars)]
         public void ResponseWhenReturnVoidhouldEqualExpect(short version, Codec codec)
@@ -270,6 +274,7 @@ namespace Tars.Net.Test
             var test = new TestTarsConvert();
             var decoder = new TarsDecoder(test.ConvertRoot);
             var encoder = new TarsEncoder(test.ConvertRoot);
+            test.FindRpcMethodByIdFunc = i => ("aa.aa", "go");
             test.FindRpcMethodFunc = (servantName, funcName) =>
             {
                 return (method, true, method.GetParameters(), codec, version, method.DeclaringType);

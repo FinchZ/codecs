@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tars.Net.Clients;
 using Tars.Net.Metadata;
 
 namespace Tars.Net.Codecs
@@ -17,11 +18,12 @@ namespace Tars.Net.Codecs
         private readonly ITarsConvertRoot convertRoot;
         private readonly IRpcMetadata rpcMetadata;
         private readonly ITarsHeadHandler headHandler;
+        private readonly IClientCallBack clientCallBack;
 
         public ResponseTarsConvert(ITarsConvert<short> shortConvert, ITarsConvert<int> intConvert,
             ITarsConvert<byte> byteConvert, ITarsConvert<string> stringConvert,
             IDictionaryInterfaceTarsConvert<string, string> dictConvert, ITarsConvert<IByteBuffer> bufferConvert,
-            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata, ITarsHeadHandler headHandler)
+            ITarsConvertRoot convertRoot, IRpcMetadata rpcMetadata, ITarsHeadHandler headHandler, IClientCallBack clientCallBack)
         {
             this.shortConvert = shortConvert;
             this.intConvert = intConvert;
@@ -32,6 +34,7 @@ namespace Tars.Net.Codecs
             this.convertRoot = convertRoot;
             this.rpcMetadata = rpcMetadata;
             this.headHandler = headHandler;
+            this.clientCallBack = clientCallBack;
         }
 
         public override Response Deserialize(IByteBuffer buffer, TarsConvertOptions options)
@@ -168,24 +171,47 @@ namespace Tars.Net.Codecs
 
                     case 5:
                         resp.ResultStatusCode = (RpcStatusCode)intConvert.Deserialize(buffer, options);
+                        var funcData = clientCallBack.FindRpcMethod(resp.RequestId);
+                        if (funcData.HasValue)
+                        {
+                            var (servantName, funcName) = funcData.Value;
+                            resp.ServantName = servantName;
+                            resp.FuncName = funcName;
+                            var (method, isOneway, outParameters, codec, version, serviceType) = rpcMetadata.FindRpcMethod(resp.ServantName, resp.FuncName);
+                            resp.ReturnValueType = method.ReturnParameter;
+                            resp.ReturnParameterTypes = outParameters;
+                            resp.ReturnParameters = new object[outParameters.Length];
+                        }
                         break;
 
                     case 6:
                         var contentBuffer = bufferConvert.Deserialize(buffer, options);
                         if (resp.ResultStatusCode == RpcStatusCode.ServerSuccess)
                         {
+                            var op = options.Create();
+                            var len = resp.ReturnParameterTypes.Length;
                             var returnType = resp.ReturnValueType.ParameterType;
-                            if (returnType != typeof(void))
+                            do
                             {
-                                headHandler.ReadHead(contentBuffer, options);
-                                resp.ReturnValue = convertRoot.Deserialize(contentBuffer, returnType, options);
+                                headHandler.ReadHead(contentBuffer, op);
+                                switch (op.Tag)
+                                {
+                                    case 0:
+                                        resp.ReturnValue = convertRoot.Deserialize(contentBuffer, returnType, op);
+                                        break;
+                                    default:
+                                        var index = op.Tag - 1;
+                                        resp.ReturnParameters[index] = convertRoot.Deserialize(contentBuffer, resp.ReturnParameterTypes[index].ParameterType, op);
+                                        break;
+                                }
                             }
-                            resp.ReturnParameters = new object[resp.ReturnParameterTypes.Length];
+                            while (contentBuffer.IsReadable()
+                                && op.Tag >= 0
+                                && op.Tag <= len);
 
-                            for (int i = 0; i < resp.ReturnParameterTypes.Length; i++)
+                            if (returnType == typeof(Task))
                             {
-                                options.Tag = i + 1;
-                                resp.ReturnParameters[i] = convertRoot.Deserialize(contentBuffer, resp.ReturnParameterTypes[i].ParameterType, options);
+                                resp.ReturnValue = convertRoot.Deserialize(contentBuffer, returnType, options);
                             }
                         }
                         break;
