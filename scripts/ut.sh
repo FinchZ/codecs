@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dotnet restore
+dotnet restore --configfile scripts/NuGet.Config
 dotnet build
 cd test/Tars.Net.Test
 dotnet minicover instrument --workdir ../../ --assemblies test/**/bin/**/*.dll --sources src/**/*.cs 
