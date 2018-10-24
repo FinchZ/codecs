@@ -24,6 +24,16 @@ namespace Tars.Net.Test
             return tarsConvert.FindRpcMethod(servantName, funcName);
         }
 
+        public (MethodInfo method, bool isOneway, ParameterInfo[] outParameters, Codec codec, short version, string servantName, string funcName, ParameterInfo[] allParameters) FindRpcMethod(MethodInfo method)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Init(IServiceProvider provider)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool IsRpcClientType(Type type)
         {
             throw new NotImplementedException();
