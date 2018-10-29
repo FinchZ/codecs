@@ -19,7 +19,7 @@ namespace Tars.Net.Codecs
                     return buffer.ReadDouble();
 
                 case TarsStructType.Zero:
-                    return 0x0;
+                    return 0D;
 
                 default:
                     throw new TarsDecodeException($"DoubleTarsConvert can not deserialize {options}");
