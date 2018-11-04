@@ -16,7 +16,7 @@ namespace Tars.Net.Codecs
             switch (options.TarsType)
             {
                 case TarsStructType.Zero:
-                    return 0x0;
+                    return 0F;
 
                 case TarsStructType.Float:
                     return buffer.ReadFloat();
